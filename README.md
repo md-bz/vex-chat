@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ConvexChat Application
+
+This is a real-time chat application built with Next.js and Convex. It features real-time messaging with support for channels, private chats, and group conversations.
+
+## Features
+
+- Channels for topic-based discussions
+- Group chats for team collaboration
+- Direct messages for private conversations
+- Real-time updates powered by Convex
+- No authentication required - just pick a username
+- Simple and clean UI built with shadcn/ui and Tailwind CSS
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository
+2. Install dependencies with `npm install`
+3. Set up your Convex deployment
+4. Add your Convex URL to the environment variables
+5. Run the development server with `npm run dev`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Structure
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The application is structured as follows:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `/app` - Next.js App Router pages and layouts
+- `/components` - Reusable UI components
+- `/convex` - Convex backend with schema and API endpoints
+- `/lib` - Utility functions, types, and client-side state management
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technologies
 
-## Learn More
+- **Frontend**: Next.js, React, Tailwind CSS, shadcn/ui
+- **Backend**: Convex for real-time database and API
+- **State Management**: Zustand for client-side state
 
-To learn more about Next.js, take a look at the following resources:
+## Implementation Details
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+For simplicity, the application uses localStorage to remember the user's selected username. In a production application, you would want to implement proper authentication.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The chat functionality is implemented using Convex's real-time capabilities, with messages being synchronized across all connected clients.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
