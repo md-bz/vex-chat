@@ -1,24 +1,35 @@
-import { defineSchema, defineTable } from "convex/server"
-import { v } from "convex/values"
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
 
 export default defineSchema({
-  users: defineTable({
-    name: v.string(),
-    lastSeen: v.optional(v.number()),
-  }),
+    users: defineTable({
+        tokenIdentifier: v.string(), // from clerk
+        name: v.string(),
+        imageUrl: v.optional(v.string()),
+        lastSeen: v.optional(v.number()),
+    }).index("by_tokenIdentifier", ["tokenIdentifier"]),
 
-  channels: defineTable({
-    name: v.string(),
-    type: v.string(), // "channel", "group", or "dm"
-    members: v.optional(v.array(v.string())),
-    createdAt: v.number(),
-  }),
+    channels: defineTable({
+        name: v.string(),
+        type: v.union(
+            v.literal("channel"),
+            v.literal("group"),
+            v.literal("private")
+        ),
+        createdBy: v.id("users"),
+        createdAt: v.number(),
+    }),
 
-  messages: defineTable({
-    channelId: v.id("channels"),
-    text: v.string(),
-    sender: v.string(),
-    timestamp: v.number(),
-  }).index("by_channel", ["channelId"]),
-})
+    channelMembers: defineTable({
+        channelId: v.id("channels"),
+        userId: v.id("users"),
+        isAdmin: v.boolean(),
+    }).index("by_userId_channelId", ["userId", "channelId"]),
 
+    messages: defineTable({
+        channelId: v.id("channels"),
+        text: v.string(),
+        userId: v.id("users"),
+        timestamp: v.number(),
+    }).index("by_channel", ["channelId"]),
+});

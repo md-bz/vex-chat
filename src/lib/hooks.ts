@@ -18,9 +18,7 @@ export function useMessages(channelId: string | null) {
 
     const sendMessage = async (message: {
         channelId: string;
-        channelType: string;
         text: string;
-        sender: string;
         timestamp: string;
     }) => {
         if (!message.channelId) return;
@@ -28,19 +26,11 @@ export function useMessages(channelId: string | null) {
         await sendMessageMutation({
             channelId: message.channelId as Id<"channels">,
             text: message.text,
-            sender: message.sender,
         });
     };
 
     return {
-        messages: messages.map((msg: any) => ({
-            id: msg._id,
-            channelId: msg.channelId,
-            channelType: "channel", // This would come from the channel in a full implementation
-            text: msg.text,
-            sender: msg.sender,
-            timestamp: new Date(msg.timestamp).toISOString(),
-        })),
+        messages,
         sendMessage,
     };
 }
@@ -55,14 +45,14 @@ export function useChannels() {
     const groups = allChannels.filter(
         (channel: any) => channel.type === "group"
     );
-    const directMessages = allChannels.filter(
-        (channel: any) => channel.type === "dm"
+    const privates = allChannels.filter(
+        (channel: any) => channel.type === "private"
     );
 
     const createChannel = async (
         name: string,
-        type: string,
-        members?: string[]
+        type: "channel" | "group" | "private",
+        members?: Id<"users">[]
     ) => {
         await createChannelMutation({
             name,
@@ -72,21 +62,9 @@ export function useChannels() {
     };
 
     return {
-        channels: channels.map((channel: any) => ({
-            id: channel._id,
-            name: channel.name,
-            type: channel.type,
-        })),
-        groups: groups.map((group: any) => ({
-            id: group._id,
-            name: group.name,
-            type: group.type,
-        })),
-        directMessages: directMessages.map((dm: any) => ({
-            id: dm._id,
-            name: dm.name,
-            type: dm.type,
-        })),
+        channels,
+        groups,
+        privates,
         createChannel,
     };
 }
@@ -95,13 +73,14 @@ export function useUsers() {
     const users = useQuery(api.users.getAll) || [];
     const createUserMutation = useMutation(api.users.create);
     const updateLastSeenMutation = useMutation(api.users.updateLastSeen);
+    const getMe = () => useQuery(api.users.getMe);
 
     const createUser = async (name: string) => {
         return await createUserMutation({ name });
     };
 
-    const updateLastSeen = async (name: string) => {
-        await updateLastSeenMutation({ name });
+    const updateLastSeen = async () => {
+        await updateLastSeenMutation();
     };
 
     return {
@@ -112,5 +91,6 @@ export function useUsers() {
         })),
         createUser,
         updateLastSeen,
+        getMe,
     };
 }

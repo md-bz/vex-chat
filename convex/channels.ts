@@ -1,44 +1,61 @@
-import { mutation, query } from "./_generated/server"
-import { v } from "convex/values"
+import { mutation, query } from "./_generated/server";
+import { ConvexError, v } from "convex/values";
+import { getUser, isUserMemberOfChannel } from "./auth";
 
 export const getAll = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("channels").collect()
-  },
-})
+    handler: async (ctx) => {
+        const user = await getUser(ctx);
+        const userChannels = await ctx.db
+            .query("channelMembers")
+            .withIndex("by_userId_channelId", (q) => q.eq("userId", user?._id))
+            .collect();
+        return Promise.all(userChannels.map((c) => ctx.db.get(c.channelId)));
+    },
+});
 
 export const get = query({
-  args: { id: v.id("channels") },
-  handler: async (ctx, args) => {
-    return await ctx.db.get(args.id)
-  },
-})
+    args: { id: v.id("channels") },
+    handler: async (ctx, args) => {
+        const isMember = await isUserMemberOfChannel(ctx, args.id);
+        if (!isMember) {
+            throw new ConvexError("Not a member of this channel");
+        }
 
-export const getByType = query({
-  args: { type: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("channels")
-      .filter((q) => q.eq(q.field("type"), args.type))
-      .collect()
-  },
-})
+        return await ctx.db.get(args.id);
+    },
+});
 
 export const create = mutation({
-  args: {
-    name: v.string(),
-    type: v.string(),
-    members: v.optional(v.array(v.string())),
-  },
-  handler: async (ctx, args) => {
-    const id = await ctx.db.insert("channels", {
-      name: args.name,
-      type: args.type,
-      members: args.members || [],
-      createdAt: Date.now(),
-    })
+    args: {
+        name: v.string(),
+        type: v.optional(
+            v.union(
+                v.literal("channel"),
+                v.literal("group"),
+                v.literal("private")
+            )
+        ),
+        members: v.optional(v.array(v.id("users"))),
+    },
+    handler: async (ctx, args) => {
+        const user = await getUser(ctx);
 
-    return id
-  },
-})
+        const id = await ctx.db.insert("channels", {
+            name: args.name,
+            type: args.type || "private",
+            createdBy: user._id,
+            createdAt: Date.now(),
+        });
 
+        const members = args.members ? [user._id, ...args.members] : [user._id];
+
+        for (const member of members) {
+            await ctx.db.insert("channelMembers", {
+                channelId: id,
+                userId: member,
+                isAdmin: false,
+            });
+        }
+        return id;
+    },
+});

@@ -10,16 +10,15 @@ import { useChatStore } from "@/lib/store";
 import { useMessages } from "@/lib/hooks";
 import { HashIcon, MessageCircleIcon, UsersIcon, SendIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useUsers } from "@/lib/hooks";
 
-interface ChatAreaProps {
-    username: string;
-}
-
-export default function ChatArea({ username }: ChatAreaProps) {
+export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const { currentChannel } = useChatStore();
-    const { messages, sendMessage } = useMessages(currentChannel?.id || null);
+    const { messages, sendMessage } = useMessages(currentChannel?._id || null);
+    const { getMe } = useUsers();
+    const me = getMe();
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -31,10 +30,8 @@ export default function ChatArea({ username }: ChatAreaProps) {
     const handleSendMessage = () => {
         if (messageText.trim() && currentChannel) {
             sendMessage({
-                channelId: currentChannel.id,
-                channelType: currentChannel.type,
+                channelId: currentChannel._id,
                 text: messageText,
-                sender: username,
                 timestamp: new Date().toISOString(),
             });
             setMessageText("");
@@ -64,7 +61,7 @@ export default function ChatArea({ username }: ChatAreaProps) {
                 return <HashIcon className="h-5 w-5" />;
             case "group":
                 return <UsersIcon className="h-5 w-5" />;
-            case "dm":
+            case "private":
                 return <MessageCircleIcon className="h-5 w-5" />;
             default:
                 return null;
@@ -91,21 +88,21 @@ export default function ChatArea({ username }: ChatAreaProps) {
                     ) : (
                         messages.map((message) => (
                             <div
-                                key={message.id}
-                                className={`flex ${message.sender === username ? "justify-end" : "justify-start"}`}
+                                key={message._id}
+                                className={`flex ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
                             >
                                 <div
-                                    className={`flex max-w-[70%] ${message.sender === username ? "flex-row-reverse" : "flex-row"}`}
+                                    className={`flex max-w-[70%] ${message.userId === me?._id ? "flex-row-reverse" : "flex-row"}`}
                                 >
                                     <Avatar
                                         className={
-                                            message.sender === username
+                                            message.userId === me?._id
                                                 ? "ml-2"
                                                 : "mr-2"
                                         }
                                     >
                                         <AvatarFallback>
-                                            {message.sender
+                                            {message.userId
                                                 .substring(0, 2)
                                                 .toUpperCase()}
                                         </AvatarFallback>
@@ -113,9 +110,9 @@ export default function ChatArea({ username }: ChatAreaProps) {
                                     <div>
                                         <div className="flex items-baseline gap-2">
                                             <p
-                                                className={`text-sm font-medium ${message.sender === username ? "text-right" : ""}`}
+                                                className={`text-sm font-medium ${message.userId === me?._id ? "text-right" : ""}`}
                                             >
-                                                {message.sender}
+                                                {message.userId}
                                             </p>
                                             <span className="text-xs text-muted-foreground">
                                                 {new Date(
@@ -128,7 +125,7 @@ export default function ChatArea({ username }: ChatAreaProps) {
                                         </div>
                                         <div
                                             className={`mt-1 rounded-lg px-4 py-2 ${
-                                                message.sender === username
+                                                message.userId === me?._id
                                                     ? "bg-primary text-primary-foreground"
                                                     : "bg-muted"
                                             }`}

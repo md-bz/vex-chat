@@ -5,7 +5,7 @@ export interface Message {
     channelId: string | Id<"channels">;
     channelType: "channel" | "group" | "dm";
     text: string;
-    sender: string;
+    userId: Id<"users">;
     timestamp: string;
 }
 

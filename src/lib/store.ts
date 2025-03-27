@@ -1,9 +1,9 @@
 import { create } from "zustand";
 
 interface Channel {
-    id: string;
+    _id: string;
     name: string;
-    type: "channel" | "group" | "dm";
+    type: "channel" | "group" | "private";
 }
 
 interface ChatStore {
