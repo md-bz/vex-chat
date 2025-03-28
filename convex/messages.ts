@@ -11,7 +11,7 @@ export const list = query({
             throw new ConvexError("Not a member of this channel");
         }
 
-        return (
+        const messages = (
             await ctx.db
                 .query("messages")
                 .withIndex("by_channel", (q) =>
@@ -20,6 +20,15 @@ export const list = query({
                 .order("desc")
                 .take(100)
         ).reverse();
+        return await Promise.all(
+            messages.map(async (message) => {
+                const user = await ctx.db.get(message.userId);
+                return {
+                    ...message,
+                    user,
+                };
+            })
+        );
     },
 });
 

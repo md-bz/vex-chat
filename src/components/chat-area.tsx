@@ -112,7 +112,7 @@ export default function ChatArea() {
                                             <p
                                                 className={`text-sm font-medium ${message.userId === me?._id ? "text-right" : ""}`}
                                             >
-                                                {message.userId}
+                                                {message.user?.name}
                                             </p>
                                             <span className="text-xs text-muted-foreground">
                                                 {new Date(
