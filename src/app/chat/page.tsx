@@ -1,11 +1,15 @@
+"use client";
 import ChatSidebar from "@/components/chat-sidebar";
 import ChatArea from "@/components/chat-area";
+import { Authenticated } from "convex/react";
 
 export default function ChatPage() {
     return (
         <div className="flex h-screen">
-            <ChatSidebar />
-            <ChatArea />
+            <Authenticated>
+                <ChatSidebar />
+                <ChatArea />
+            </Authenticated>
         </div>
     );
 }
