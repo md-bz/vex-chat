@@ -91,7 +91,10 @@ export default function ChatArea() {
                 </div>
             </div>
 
-            <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+            <ScrollArea
+                className="flex-1 p-4 overflow-y-scroll"
+                ref={scrollAreaRef}
+            >
                 <div className="space-y-4">
                     {messages.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
@@ -154,7 +157,7 @@ export default function ChatArea() {
                 </div>
             </ScrollArea>
 
-            <div className="p-4 border-t">
+            <div className="p-1">
                 <div className="flex gap-2">
                     <Input
                         placeholder={`Message ${currentChannel.name}...`}
