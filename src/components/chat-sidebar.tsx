@@ -9,6 +9,7 @@ import { useChannels, useUsers } from "@/lib/hooks";
 import { useClerk } from "@clerk/nextjs";
 import { Id } from "../../convex/_generated/dataModel";
 import { ChatList } from "./ChatList";
+import { useChatStore } from "@/lib/store";
 
 export default function ChatSidebar() {
     const router = useRouter();
@@ -32,8 +33,12 @@ export default function ChatSidebar() {
         await createChannel("name", "private", [userId as Id<"users">]);
     };
 
+    const { currentChannel } = useChatStore();
+
     return (
-        <div className="w-64 h-full bg-primary-foreground flex flex-col">
+        <div
+            className={`h-full w-64 bg-primary-foreground flex flex-col not-md:w-full ${currentChannel ? "not-md:hidden" : ""}`}
+        >
             <div className="p-4 border-b border-primary/10">
                 <h1 className="text-xl font-bold">ConvexChat</h1>
                 <div className="flex items-center mt-2">

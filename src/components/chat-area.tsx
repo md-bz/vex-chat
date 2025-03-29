@@ -8,14 +8,20 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatStore } from "@/lib/store";
 import { useMessages } from "@/lib/hooks";
-import { HashIcon, MessageCircleIcon, UsersIcon, SendIcon } from "lucide-react";
+import {
+    HashIcon,
+    MessageCircleIcon,
+    UsersIcon,
+    SendIcon,
+    ArrowLeftIcon,
+} from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUsers } from "@/lib/hooks";
 
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
     const scrollAreaRef = useRef<HTMLDivElement>(null);
-    const { currentChannel } = useChatStore();
+    const { selectChannel, currentChannel } = useChatStore();
     const { messages, sendMessage } = useMessages(currentChannel?._id || null);
     const { getMe } = useUsers();
     const me = getMe();
@@ -47,7 +53,7 @@ export default function ChatArea() {
 
     if (!currentChannel) {
         return (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center not-md:hidden">
                 <p className="text-muted-foreground">
                     Select a channel to start chatting
                 </p>
@@ -70,8 +76,14 @@ export default function ChatArea() {
 
     return (
         <div className="flex-1 flex flex-col h-full overflow-scroll bg-background">
-            <div className="px-6 py-4 border-b bg-card">
+            <div className="px-3 py-4 border-b bg-card">
                 <div className="flex items-center">
+                    <button
+                        onClick={() => selectChannel(null)}
+                        className="mr-3 md:hidden"
+                    >
+                        <ArrowLeftIcon className="h-5 w-5" />
+                    </button>
                     {getChannelIcon()}
                     <h2 className="ml-2 font-semibold">
                         {currentChannel.name}

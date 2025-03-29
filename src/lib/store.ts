@@ -8,7 +8,7 @@ interface Channel {
 
 interface ChatStore {
     currentChannel: Channel | null;
-    selectChannel: (channel: Channel) => void;
+    selectChannel: (channel: Channel | null) => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
