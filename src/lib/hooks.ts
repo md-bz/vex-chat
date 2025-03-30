@@ -39,6 +39,9 @@ export function useChannels() {
     const allChannels = useQuery(api.channels.getAll) || [];
     const createChannelMutation = useMutation(api.channels.create);
 
+    const getChannel = (id?: Id<"channels">) =>
+        useQuery(api.channels.get, id ? { id } : "skip");
+
     const channels = allChannels.filter(
         (channel: any) => channel.type === "channel"
     );
@@ -66,6 +69,7 @@ export function useChannels() {
         groups,
         privates,
         createChannel,
+        getChannel,
     };
 }
 

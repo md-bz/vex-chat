@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
-import { getUser, isUserMemberOfChannel } from "./auth";
+import { getUser, isUserAdminOfChannel, isUserMemberOfChannel } from "./auth";
 
 export const list = query({
     args: { channelId: v.id("channels") },
@@ -38,10 +38,17 @@ export const send = mutation({
         text: v.string(),
     },
     handler: async (ctx, args) => {
-        const isMember = await isUserMemberOfChannel(ctx, args.channelId);
-        if (!isMember) {
-            throw new ConvexError("Not a member of this channel");
+        const channel = await ctx.db.get(args.channelId);
+        if (!channel) {
+            throw new ConvexError("Channel not found");
         }
+
+        const isAdmin = await isUserAdminOfChannel(ctx, args.channelId);
+
+        if (channel.type === "channel" && !isAdmin) {
+            throw new ConvexError("You are not an admin of this channel");
+        }
+
         const user = await getUser(ctx);
 
         const id = await ctx.db.insert("messages", {

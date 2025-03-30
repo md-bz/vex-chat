@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatStore } from "@/lib/store";
-import { useMessages } from "@/lib/hooks";
+import { useChannels, useMessages } from "@/lib/hooks";
 import {
     HashIcon,
     MessageCircleIcon,
@@ -25,6 +25,8 @@ export default function ChatArea() {
     const { messages, sendMessage } = useMessages(currentChannel?._id || null);
     const { getMe } = useUsers();
     const me = getMe();
+    const { getChannel } = useChannels();
+    const channelInfo = getChannel(currentChannel?._id);
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -157,23 +159,25 @@ export default function ChatArea() {
                 </div>
             </ScrollArea>
 
-            <div className="p-1">
-                <div className="flex gap-2">
-                    <Input
-                        placeholder={`Message ${currentChannel.name}...`}
-                        value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="flex-1"
-                    />
-                    <Button
-                        onClick={handleSendMessage}
-                        disabled={!messageText.trim()}
-                    >
-                        <SendIcon className="h-4 w-4" />
-                    </Button>
+            {channelInfo?.canSendMessage && (
+                <div className="p-1">
+                    <div className="flex gap-2">
+                        <Input
+                            placeholder={`Message ${currentChannel.name}...`}
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="flex-1"
+                        />
+                        <Button
+                            onClick={handleSendMessage}
+                            disabled={!messageText.trim()}
+                        >
+                            <SendIcon className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

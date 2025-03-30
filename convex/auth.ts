@@ -22,17 +22,33 @@ export async function getUser(ctx: QueryCtx) {
     return user;
 }
 
-export async function isUserMemberOfChannel(
+export async function getMembership(
     ctx: QueryCtx | MutationCtx,
     channelId: Id<"channels">
 ) {
     const user = await getUser(ctx);
-
-    const membership = await ctx.db
+    return ctx.db
         .query("channelMembers")
         .withIndex("by_userId_channelId", (q) =>
             q.eq("userId", user._id).eq("channelId", channelId)
         )
         .first();
+}
+
+export async function isUserMemberOfChannel(
+    ctx: QueryCtx | MutationCtx,
+    channelId: Id<"channels">
+) {
+    const membership = await getMembership(ctx, channelId);
+
     return membership ? true : false;
+}
+
+export async function isUserAdminOfChannel(
+    ctx: QueryCtx | MutationCtx,
+    channelId: Id<"channels">
+) {
+    const membership = await getMembership(ctx, channelId);
+
+    return membership ? membership.isAdmin : false;
 }
