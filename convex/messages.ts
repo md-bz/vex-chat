@@ -43,10 +43,10 @@ export const send = mutation({
             throw new ConvexError("Channel not found");
         }
 
-        const isAdmin = await isUserAdminOfChannel(ctx, args.channelId);
-
-        if (channel.type === "channel" && !isAdmin) {
-            throw new ConvexError("You are not an admin of this channel");
+        if (channel.type === "channel") {
+            const isAdmin = await isUserAdminOfChannel(ctx, args.channelId);
+            if (!isAdmin)
+                throw new ConvexError("You are not an admin of this channel");
         }
 
         const user = await getUser(ctx);
