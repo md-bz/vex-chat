@@ -1,7 +1,8 @@
 import { create } from "zustand";
+import { Id } from "../../convex/_generated/dataModel";
 
 interface Channel {
-    _id: string;
+    _id: Id<"channels">;
     name: string;
     type: "channel" | "group" | "private";
 }
