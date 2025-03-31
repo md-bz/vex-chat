@@ -26,6 +26,13 @@ export default defineSchema({
         isAdmin: v.boolean(),
     }).index("by_userId_channelId", ["userId", "channelId"]),
 
+    channelLinks: defineTable({
+        channelId: v.id("channels"),
+        link: v.string(),
+        createdBy: v.id("users"),
+        createdAt: v.number(),
+    }).index("by_link_channelId", ["link", "channelId"]),
+
     messages: defineTable({
         channelId: v.id("channels"),
         text: v.string(),

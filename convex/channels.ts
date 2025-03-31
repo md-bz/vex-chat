@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { getMembership, getUser, isUserMemberOfChannel } from "./auth";
+import { getUser, isUserAdminOfChannel } from "./auth";
+import { nanoid } from "nanoid";
 
 export const getAll = query({
     handler: async (ctx) => {
@@ -80,5 +81,89 @@ export const create = mutation({
             });
         }
         return id;
+    },
+});
+
+export const createLink = mutation({
+    args: {
+        channelId: v.id("channels"),
+    },
+    handler: async (ctx, args) => {
+        const isAdmin = await isUserAdminOfChannel(ctx, args.channelId);
+        if (!isAdmin) {
+            throw new ConvexError("You are not an admin of this channel");
+        }
+
+        const channel = await ctx.db.get(args.channelId);
+        if (!channel) {
+            throw new ConvexError("Channel not found");
+        }
+
+        if (channel.type === "private") {
+            throw new ConvexError(
+                "Links can only be created in channels and groups"
+            );
+        }
+
+        const oldLink = await ctx.db
+            .query("channelLinks")
+            .filter((q) => q.eq(q.field("channelId"), args.channelId))
+            .first();
+        if (oldLink) {
+            return oldLink.link;
+        }
+
+        const user = await getUser(ctx);
+        const link = nanoid();
+
+        await ctx.db.insert("channelLinks", {
+            channelId: args.channelId,
+            link,
+            createdAt: Date.now(),
+            createdBy: user._id,
+        });
+
+        return link;
+    },
+});
+
+export const joinChannel = mutation({
+    args: {
+        link: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const channelLink = await ctx.db
+            .query("channelLinks")
+            .filter((q) => q.eq(q.field("link"), args.link))
+            .first();
+
+        if (!channelLink) {
+            throw new ConvexError("Link not found");
+        }
+
+        const channel = await ctx.db.get(channelLink.channelId);
+        if (!channel) {
+            throw new ConvexError("Channel not found");
+        }
+
+        // this condition is not needed, but it's here for safety
+        if (channel.type === "private") {
+            await ctx.db.delete(channelLink._id);
+            console.error("Links found for private:", channel);
+
+            throw new ConvexError(
+                "Links can only be created in channels and groups"
+            );
+        }
+
+        const user = await getUser(ctx);
+
+        await ctx.db.insert("channelMembers", {
+            channelId: channelLink.channelId,
+            userId: user._id,
+            isAdmin: false,
+        });
+
+        return true;
     },
 });
