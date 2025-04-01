@@ -37,9 +37,20 @@ export const get = query({
         const hasPermission = thisMember.isAdmin || channel.type !== "channel";
 
         const members = hasPermission
-            ? await Promise.all(channelMembers.map((m) => ctx.db.get(m.userId)))
+            ? await Promise.all(
+                  channelMembers.map((m) =>
+                      ctx.db.get(m.userId).then((m) => {
+                          if (!m) return null;
+                          return {
+                              _id: m._id,
+                              name: m.name,
+                              imageUrl: m.imageUrl,
+                              lastSeen: m.lastSeen,
+                          };
+                      })
+                  )
+              )
             : undefined;
-
         return {
             ...channel,
             canSendMessage: hasPermission,

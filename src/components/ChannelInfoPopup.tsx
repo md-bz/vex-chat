@@ -30,7 +30,6 @@ type Member = {
     _creationTime: number;
     imageUrl?: string;
     lastSeen?: number;
-    tokenIdentifier: string;
     name: string;
 } | null;
 
