@@ -8,7 +8,7 @@ export const getAll = query({
         const user = await getUser(ctx);
         const userChannels = await ctx.db
             .query("channelMembers")
-            .withIndex("by_userId_channelId", (q) => q.eq("userId", user?._id))
+            .withIndex("by_userId", (q) => q.eq("userId", user?._id))
             .collect();
         return Promise.all(userChannels.map((c) => ctx.db.get(c.channelId)));
     },
@@ -20,15 +20,11 @@ export const get = query({
         const user = await getUser(ctx);
         const channelMembers = await ctx.db
             .query("channelMembers")
-            .withIndex("by_userId_channelId", (q) =>
-                q.eq("userId", user._id).eq("channelId", args.id)
-            )
+            .withIndex("by_channelId", (q) => q.eq("channelId", args.id))
             .collect();
 
-        console.log(channelMembers);
-
-        const isMember = channelMembers[0].userId === user._id;
-        if (!isMember) {
+        const thisMember = channelMembers.find((m) => m.userId === user._id);
+        if (!thisMember) {
             throw new ConvexError("Not a member of this channel");
         }
 
@@ -38,13 +34,16 @@ export const get = query({
             throw new ConvexError("Channel not found");
         }
 
-        const hasPermission =
-            channelMembers[0].isAdmin || channel.type !== "channel";
+        const hasPermission = thisMember.isAdmin || channel.type !== "channel";
+
+        const members = hasPermission
+            ? await Promise.all(channelMembers.map((m) => ctx.db.get(m.userId)))
+            : undefined;
 
         return {
             ...channel,
             canSendMessage: hasPermission,
-            members: hasPermission ? channelMembers.map((m) => m) : undefined,
+            members: members,
         };
     },
 });

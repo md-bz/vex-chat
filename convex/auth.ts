@@ -29,9 +29,7 @@ export async function getMembership(
     const user = await getUser(ctx);
     return ctx.db
         .query("channelMembers")
-        .withIndex("by_userId_channelId", (q) =>
-            q.eq("userId", user._id).eq("channelId", channelId)
-        )
+        .withIndex("by_userId", (q) => q.eq("userId", user._id))
         .first();
 }
 

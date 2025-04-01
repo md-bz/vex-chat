@@ -24,7 +24,9 @@ export default defineSchema({
         channelId: v.id("channels"),
         userId: v.id("users"),
         isAdmin: v.boolean(),
-    }).index("by_userId_channelId", ["userId", "channelId"]),
+    })
+        .index("by_userId", ["userId"])
+        .index("by_channelId", ["channelId"]),
 
     channelLinks: defineTable({
         channelId: v.id("channels"),
