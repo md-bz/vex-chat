@@ -8,15 +8,11 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatStore } from "@/lib/store";
 import { useChannels, useMessages } from "@/lib/hooks";
-import {
-    HashIcon,
-    MessageCircleIcon,
-    UsersIcon,
-    SendIcon,
-    ArrowLeftIcon,
-} from "lucide-react";
+import { SendIcon, ArrowLeftIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUsers } from "@/lib/hooks";
+import ChannelInfoPopup from "./ChannelInfoPopup";
+import { ChannelIcon } from "./ui/channel-icon";
 
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
@@ -63,19 +59,6 @@ export default function ChatArea() {
         );
     }
 
-    const getChannelIcon = () => {
-        switch (currentChannel.type) {
-            case "channel":
-                return <HashIcon className="h-5 w-5" />;
-            case "group":
-                return <UsersIcon className="h-5 w-5" />;
-            case "private":
-                return <MessageCircleIcon className="h-5 w-5" />;
-            default:
-                return null;
-        }
-    };
-
     return (
         <div className="flex-1 flex flex-col h-full overflow-scroll bg-background">
             <div className="px-3 py-4 border-b bg-card">
@@ -86,10 +69,23 @@ export default function ChatArea() {
                     >
                         <ArrowLeftIcon className="h-5 w-5" />
                     </button>
-                    {getChannelIcon()}
-                    <h2 className="ml-2 font-semibold">
-                        {currentChannel.name}
-                    </h2>
+                    {channelInfo && (
+                        <ChannelInfoPopup
+                            id={channelInfo._id}
+                            name={channelInfo.name}
+                            type={channelInfo.type}
+                            createdAt={channelInfo.createdAt}
+                            members={channelInfo.members}
+                            inviteLink={"example"}
+                        >
+                            <div className="flex items-center space-x-2">
+                                <ChannelIcon type={channelInfo.type} />
+                                <h2 className="ml-2 font-semibold">
+                                    {currentChannel.name}
+                                </h2>
+                            </div>
+                        </ChannelInfoPopup>
+                    )}
                 </div>
             </div>
 
