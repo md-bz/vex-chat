@@ -24,21 +24,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ChannelIcon } from "./ui/channel-icon";
-
-type Member = {
-    _id: string;
-    _creationTime: number;
-    imageUrl?: string;
-    lastSeen?: number;
-    name: string;
-} | null;
+import UserInfo from "./UserInfoPopup";
+import { User } from "@/lib/types";
 
 interface ChannelInfoPopupProps {
     id: string;
     name: string;
     type: "channel" | "group" | "private";
     createdAt: string | number;
-    members: Member[] | undefined;
+    members: User[] | undefined;
     inviteLink: string;
     children: React.ReactNode;
 }
@@ -145,37 +139,40 @@ export default function ChannelInfoPopup({
                         <ScrollArea className="pr-4 h-5/6">
                             <div className="space-y-2">
                                 {members?.filter(Boolean).map((member) => (
-                                    <div
-                                        key={member?._id}
-                                        className="flex items-center space-x-3 py-2"
-                                    >
-                                        <Avatar>
-                                            {member?.imageUrl && (
-                                                <AvatarImage
-                                                    src={member.imageUrl}
-                                                    alt={member.name}
-                                                />
-                                            )}
-                                            <AvatarFallback>
-                                                {member?.name
-                                                    .substring(0, 2)
-                                                    .toUpperCase()}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="text-sm font-medium">
-                                                {member?.name}
-                                            </p>
-                                            {member?.lastSeen && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    Last seen
-                                                    {new Date(
-                                                        member.lastSeen
-                                                    ).toString()}
-                                                </p>
-                                            )}
+                                    <UserInfo user={member} key={member?._id}>
+                                        <div className="block w-full">
+                                            <div className="flex items-center space-x-3 py-2">
+                                                <Avatar>
+                                                    {member?.imageUrl && (
+                                                        <AvatarImage
+                                                            src={
+                                                                member.imageUrl
+                                                            }
+                                                            alt={member.name}
+                                                        />
+                                                    )}
+                                                    <AvatarFallback>
+                                                        {member?.name
+                                                            .substring(0, 2)
+                                                            .toUpperCase()}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="text-sm font-medium">
+                                                        {member?.name}
+                                                    </p>
+                                                    {member?.lastSeen && (
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Last seen
+                                                            {new Date(
+                                                                member.lastSeen
+                                                            ).toString()}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </UserInfo>
                                 ))}
                             </div>
                         </ScrollArea>

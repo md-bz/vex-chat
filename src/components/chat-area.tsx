@@ -13,6 +13,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUsers } from "@/lib/hooks";
 import ChannelInfoPopup from "./ChannelInfoPopup";
 import { ChannelIcon } from "./ui/channel-icon";
+import UserInfoPopup from "./UserInfoPopup";
+import { User } from "@/lib/types";
 
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
@@ -75,7 +77,7 @@ export default function ChatArea() {
                             name={channelInfo.name}
                             type={channelInfo.type}
                             createdAt={channelInfo.createdAt}
-                            members={channelInfo.members}
+                            members={channelInfo.members as User[]}
                             inviteLink={"example"}
                         >
                             <div className="flex items-center space-x-2">
@@ -107,19 +109,21 @@ export default function ChatArea() {
                                 <div
                                     className={`flex max-w-[70%] ${message.userId === me?._id ? "flex-row-reverse" : "flex-row"}`}
                                 >
-                                    <Avatar
-                                        className={
-                                            message.userId === me?._id
-                                                ? "ml-2"
-                                                : "mr-2"
-                                        }
-                                    >
-                                        <AvatarFallback>
-                                            {message.userId
-                                                .substring(0, 2)
-                                                .toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
+                                    <UserInfoPopup user={message.user as User}>
+                                        <Avatar
+                                            className={
+                                                message.userId === me?._id
+                                                    ? "ml-2"
+                                                    : "mr-2"
+                                            }
+                                        >
+                                            <AvatarFallback>
+                                                {message.userId
+                                                    .substring(0, 2)
+                                                    .toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </UserInfoPopup>
                                     <div>
                                         <div className="flex items-baseline gap-2">
                                             <p

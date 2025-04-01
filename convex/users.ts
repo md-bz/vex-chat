@@ -14,6 +14,23 @@ export const getMe = query({
     },
 });
 
+export const getById = query({
+    args: {
+        id: v.id("users"),
+    },
+    handler: async (ctx, args) => {
+        const user = await ctx.db.get(args.id);
+
+        if (!user) {
+            throw new ConvexError("User not found");
+        }
+
+        const { _creationTime, tokenIdentifier, ...sanitizedUser } = user;
+
+        return sanitizedUser;
+    },
+});
+
 export const create = mutation({
     args: {
         name: v.string(),

@@ -10,9 +10,10 @@ export interface Message {
 }
 
 export interface User {
-    id: string | Id<"users">;
+    _id: Id<"users">;
     name: string;
     lastSeen?: number;
+    imageUrl?: string;
 }
 
 export interface Channel {
