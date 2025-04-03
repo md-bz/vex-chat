@@ -15,6 +15,7 @@ import ChannelInfoPopup from "./ChannelInfoPopup";
 import { ChannelIcon } from "./ui/channel-icon";
 import UserInfoPopup from "./UserInfoPopup";
 import { User } from "@/lib/types";
+import UserProfile from "./UserProfile";
 
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
@@ -61,9 +62,44 @@ export default function ChatArea() {
         );
     }
 
+    function ChannelTopInfo() {
+        if (!channelInfo) {
+            return null;
+        }
+        if (channelInfo.type !== "private") {
+            return (
+                <ChannelInfoPopup
+                    id={channelInfo._id}
+                    name={channelInfo.name}
+                    type={channelInfo.type}
+                    createdAt={channelInfo.createdAt}
+                    members={channelInfo.members as User[]}
+                    inviteLink={"example"}
+                >
+                    <div className="flex items-center space-x-2">
+                        <ChannelIcon type={channelInfo.type} />
+                        <h2 className="ml-2 font-semibold">
+                            {currentChannel?.name}
+                        </h2>
+                    </div>
+                </ChannelInfoPopup>
+            );
+        }
+
+        const otherUser = channelInfo.members?.find(
+            (user) => user?._id !== me?._id
+        ) as User;
+
+        return (
+            <UserInfoPopup user={otherUser}>
+                <UserProfile user={otherUser} />
+            </UserInfoPopup>
+        );
+    }
+
     return (
         <div className="flex-1 flex flex-col h-full overflow-scroll bg-background">
-            <div className="px-3 py-4 border-b bg-card">
+            <div className="px-3 py-4 border-b bg-card h-[70px] flex align-center">
                 <div className="flex items-center">
                     <button
                         onClick={() => selectChannel(null)}
@@ -71,23 +107,7 @@ export default function ChatArea() {
                     >
                         <ArrowLeftIcon className="h-5 w-5" />
                     </button>
-                    {channelInfo && (
-                        <ChannelInfoPopup
-                            id={channelInfo._id}
-                            name={channelInfo.name}
-                            type={channelInfo.type}
-                            createdAt={channelInfo.createdAt}
-                            members={channelInfo.members as User[]}
-                            inviteLink={"example"}
-                        >
-                            <div className="flex items-center space-x-2">
-                                <ChannelIcon type={channelInfo.type} />
-                                <h2 className="ml-2 font-semibold">
-                                    {currentChannel.name}
-                                </h2>
-                            </div>
-                        </ChannelInfoPopup>
-                    )}
+                    <ChannelTopInfo />
                 </div>
             </div>
 

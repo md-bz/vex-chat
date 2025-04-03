@@ -3,7 +3,6 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
     Dialog,
@@ -11,9 +10,9 @@ import {
     DialogHeader,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Clock } from "lucide-react";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { User } from "@/lib/types";
+import UserProfile from "./UserProfile";
 
 // Define the Id type to match Convex's Id type
 type Id<T extends string> = { id: string; tableName: T };
@@ -37,30 +36,7 @@ export default function UserInfoPopup({ user, children }: UserInfoProps) {
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>
-                        <div className="flex flex-row items-center gap-4 pb-2">
-                            <div className="relative">
-                                <Avatar className="h-16 w-16">
-                                    <AvatarImage
-                                        src={user.imageUrl}
-                                        alt={user.name}
-                                    />
-                                    <AvatarFallback>
-                                        {user.name
-                                            .substring(0, 2)
-                                            .toUpperCase()}
-                                    </AvatarFallback>
-                                </Avatar>
-                            </div>
-                            <div className="flex flex-col">
-                                <h3 className="text-xl font-semibold">
-                                    {user.name}
-                                </h3>
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                    <Clock className="mr-1 h-3 w-3" />
-                                    <span>Last seen {user.lastSeen}</span>
-                                </div>
-                            </div>
-                        </div>
+                        <UserProfile user={user} />
                     </DialogTitle>
                 </DialogHeader>
                 <div className="w-full border-0 shadow-none">
