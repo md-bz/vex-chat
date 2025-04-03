@@ -11,12 +11,14 @@ import {
 } from "@/components/ui/dialog";
 import { Id } from "../../convex/_generated/dataModel";
 import { DialogContent } from "@radix-ui/react-dialog";
+import { User } from "@/lib/types";
 
 interface ChatListProps {
     type: "channel" | "group" | "private";
     items: Array<{
         _id: Id<"channels">;
         name: string;
+        user?: User;
     } | null>;
     icon: React.ElementType;
     onCreateItem: (name: string) => Promise<void>;
@@ -120,7 +122,8 @@ export const ChatList: React.FC<ChatListProps> = ({
                             }
                         >
                             <Icon className="h-4 w-4 mr-2" />
-                            {item.name}
+
+                            {type === "private" ? item.user?.name : item.name}
                         </Button>
                     );
                 })}
