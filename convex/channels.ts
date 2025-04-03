@@ -18,6 +18,13 @@ export const get = query({
     args: { id: v.id("channels") },
     handler: async (ctx, args) => {
         const user = await getUser(ctx);
+
+        const channel = await ctx.db.get(args.id);
+
+        if (!channel) {
+            throw new ConvexError("Channel not found");
+        }
+
         const channelMembers = await ctx.db
             .query("channelMembers")
             .withIndex("by_channelId", (q) => q.eq("channelId", args.id))
@@ -26,12 +33,6 @@ export const get = query({
         const thisMember = channelMembers.find((m) => m.userId === user._id);
         if (!thisMember) {
             throw new ConvexError("Not a member of this channel");
-        }
-
-        const channel = await ctx.db.get(args.id);
-
-        if (!channel) {
-            throw new ConvexError("Channel not found");
         }
 
         const hasPermission = thisMember.isAdmin || channel.type !== "channel";
