@@ -109,37 +109,39 @@ export default function ChatArea() {
                                 <div
                                     className={`flex max-w-[70%] ${message.userId === me?._id ? "flex-row-reverse" : "flex-row"}`}
                                 >
-                                    <UserInfoPopup user={message.user as User}>
-                                        <Avatar
-                                            className={
-                                                message.userId === me?._id
-                                                    ? "ml-2"
-                                                    : "mr-2"
-                                            }
-                                        >
-                                            <AvatarFallback>
-                                                {message.userId
-                                                    .substring(0, 2)
-                                                    .toUpperCase()}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </UserInfoPopup>
-                                    <div>
-                                        <div className="flex items-baseline gap-2">
-                                            <p
-                                                className={`text-sm font-medium ${message.userId === me?._id ? "text-right" : ""}`}
+                                    {channelInfo?.type !== "private" &&
+                                        message.userId !== me?._id && (
+                                            <UserInfoPopup
+                                                user={message.user as User}
                                             >
-                                                {message.user?.name}
-                                            </p>
-                                            <span className="text-xs text-muted-foreground">
-                                                {new Date(
-                                                    message.timestamp
-                                                ).toLocaleTimeString([], {
-                                                    hour: "2-digit",
-                                                    minute: "2-digit",
-                                                })}
-                                            </span>
-                                        </div>
+                                                <Avatar
+                                                    className={
+                                                        message.userId ===
+                                                        me?._id
+                                                            ? "ml-2"
+                                                            : "mr-2"
+                                                    }
+                                                >
+                                                    <AvatarFallback>
+                                                        {message.userId
+                                                            .substring(0, 2)
+                                                            .toUpperCase()}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            </UserInfoPopup>
+                                        )}
+
+                                    <div>
+                                        {channelInfo?.type !== "private" &&
+                                            message.userId !== me?._id && (
+                                                <div className="flex items-baseline gap-2 text-start justify-start">
+                                                    <p
+                                                        className={`text-sm font-medium`}
+                                                    >
+                                                        {message.user?.name}
+                                                    </p>
+                                                </div>
+                                            )}
                                         <div
                                             className={`mt-1 rounded-lg px-4 py-2 ${
                                                 message.userId === me?._id
@@ -150,6 +152,16 @@ export default function ChatArea() {
                                             <p className="text-sm">
                                                 {message.text}
                                             </p>
+                                        </div>
+                                        <div
+                                            className={`text-xs text-muted-foreground ${message.userId === me?._id ? "text-right" : "text-left"}`}
+                                        >
+                                            {new Date(
+                                                message.timestamp
+                                            ).toLocaleTimeString([], {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                            })}
                                         </div>
                                     </div>
                                 </div>
