@@ -6,8 +6,11 @@ export default defineSchema({
         tokenIdentifier: v.string(), // from clerk
         name: v.string(),
         imageUrl: v.optional(v.string()),
+        username: v.optional(v.string()),
         lastSeen: v.optional(v.number()),
-    }).index("by_tokenIdentifier", ["tokenIdentifier"]),
+    })
+        .index("by_tokenIdentifier", ["tokenIdentifier"])
+        .searchIndex("search_username", { searchField: "username" }),
 
     channels: defineTable({
         name: v.string(),
@@ -41,4 +44,10 @@ export default defineSchema({
         userId: v.id("users"),
         timestamp: v.number(),
     }).index("by_channel", ["channelId"]),
+
+    contacts: defineTable({
+        userId: v.id("users"),
+        name: v.string(),
+        contactIds: v.array(v.id("users")),
+    }),
 });

@@ -71,3 +71,19 @@ export const updateLastSeen = mutation({
         });
     },
 });
+
+export const search = query({
+    args: {
+        query: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const users = await ctx.db
+            .query("users")
+            .withSearchIndex("search_username", (q) =>
+                q.search("username", args.query)
+            )
+            .collect();
+
+        return users;
+    },
+});

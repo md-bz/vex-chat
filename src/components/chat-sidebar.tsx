@@ -10,6 +10,7 @@ import { useClerk } from "@clerk/nextjs";
 import { Id } from "../../convex/_generated/dataModel";
 import { ChatList } from "./ChatList";
 import { useChatStore } from "@/lib/store";
+import { UserSearch } from "./UserSearch";
 
 export default function ChatSidebar() {
     const router = useRouter();
@@ -44,6 +45,9 @@ export default function ChatSidebar() {
                 <div className="flex items-center mt-2">
                     <div className="h-3 w-3 bg-green-500 rounded-full mr-2"></div>
                     <span className="text-sm">{username}</span>
+                </div>
+                <div className="py-4">
+                    <UserSearch />
                 </div>
             </div>
 

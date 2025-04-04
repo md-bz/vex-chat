@@ -74,10 +74,11 @@ export function useChannels() {
 }
 
 export function useUsers() {
-    const users = useQuery(api.users.getAll) || [];
     const createUserMutation = useMutation(api.users.create);
     const updateLastSeenMutation = useMutation(api.users.updateLastSeen);
     const getMe = () => useQuery(api.users.getMe);
+    const searchUsers = (query: string) =>
+        useQuery(api.users.search, { query });
 
     const createUser = async (name: string) => {
         return await createUserMutation({ name });
@@ -88,13 +89,9 @@ export function useUsers() {
     };
 
     return {
-        users: users.map((user: any) => ({
-            id: user._id,
-            name: user.name,
-            lastSeen: user.lastSeen,
-        })),
         createUser,
         updateLastSeen,
         getMe,
+        searchUsers,
     };
 }
