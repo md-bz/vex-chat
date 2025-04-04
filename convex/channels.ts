@@ -1,7 +1,60 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { getUser, isUserAdminOfChannel } from "./auth";
 import { nanoid } from "nanoid";
+import { Id } from "./_generated/dataModel";
+
+export async function getSharedChannels(
+    ctx: QueryCtx | MutationCtx,
+    user1: Id<"users">,
+    user2: Id<"users">
+) {
+    const user1Membership = await ctx.db
+        .query("channelMembers")
+        .withIndex("by_userId", (q) => q.eq("userId", user1))
+        .collect();
+
+    if (!user1Membership) {
+        return {
+            sharedPrivate: null,
+            sharedChannels: [],
+        };
+    }
+
+    const user2Membership = await ctx.db
+        .query("channelMembers")
+        .withIndex("by_userId", (q) => q.eq("userId", user2))
+        .collect();
+    if (!user2Membership) {
+        return {
+            sharedPrivate: null,
+            sharedChannels: [],
+        };
+    }
+
+    const user1ChannelIds = new Set(
+        user1Membership.map((membership) => membership.channelId)
+    );
+    const sharedChannelIds = user2Membership
+        .map((membership) => membership.channelId)
+        .filter((channelId) => user1ChannelIds.has(channelId));
+
+    const channels = await Promise.all(
+        sharedChannelIds.map((channelId) => ctx.db.get(channelId))
+    );
+
+    if (!channels || channels.length === 0) {
+        return {
+            sharedPrivate: null,
+            sharedChannels: [],
+        };
+    }
+
+    return {
+        sharedPrivate: channels.find((c) => c?.type === "private"),
+        sharedChannels: channels.filter((c) => c?.type !== "private"),
+    };
+}
 
 export const getAll = query({
     handler: async (ctx) => {
@@ -98,9 +151,24 @@ export const create = mutation({
     handler: async (ctx, args) => {
         const user = await getUser(ctx);
 
+        const type = args.type || "private";
+
+        if (type === "private") {
+            if (!args.members || args.members.length !== 1) {
+                throw new ConvexError("Private channels requires a member");
+            }
+
+            const { sharedPrivate } = await getSharedChannels(
+                ctx,
+                user._id,
+                args.members[0]
+            );
+            if (sharedPrivate) return sharedPrivate?._id;
+        }
+
         const id = await ctx.db.insert("channels", {
             name: args.name,
-            type: args.type || "private",
+            type,
             createdBy: user._id,
             createdAt: Date.now(),
         });

@@ -2,9 +2,10 @@ import { create } from "zustand";
 import { Id } from "../../convex/_generated/dataModel";
 
 interface Channel {
-    _id: Id<"channels">;
+    _id: Id<"channels"> | null;
     name: string;
     type: "channel" | "group" | "private";
+    userId: Id<"users"> | null;
 }
 
 interface ChatStore {

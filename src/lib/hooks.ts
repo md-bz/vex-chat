@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import { getById } from "../../convex/users";
 
 export function useMessages(channelId: string | null) {
     // Convert string ID to Convex ID if it exists
@@ -57,7 +58,7 @@ export function useChannels() {
         type: "channel" | "group" | "private",
         members?: Id<"users">[]
     ) => {
-        await createChannelMutation({
+        return await createChannelMutation({
             name,
             type,
             members,
@@ -88,10 +89,14 @@ export function useUsers() {
         await updateLastSeenMutation();
     };
 
+    const getUserById = (id?: Id<"users">) =>
+        useQuery(api.users.getById, id ? { id } : "skip");
+
     return {
         createUser,
         updateLastSeen,
         getMe,
         searchUsers,
+        getUserById,
     };
 }

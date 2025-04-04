@@ -13,9 +13,8 @@ import {
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { User } from "@/lib/types";
 import UserProfile from "./UserProfile";
-
-// Define the Id type to match Convex's Id type
-type Id<T extends string> = { id: string; tableName: T };
+import { Button } from "./ui/button";
+import { useChatStore } from "@/lib/store";
 
 interface UserInfoProps {
     user: User;
@@ -25,9 +24,17 @@ interface UserInfoProps {
 export default function UserInfoPopup({ user, children }: UserInfoProps) {
     const [open, setOpen] = useState(false);
 
-    if (!user) {
-        return null;
-    }
+    const { selectChannel } = useChatStore();
+
+    const handleSendMessage = async () => {
+        selectChannel({
+            _id: null,
+            name: user.name,
+            type: "private",
+            userId: user._id,
+        });
+        setOpen(false);
+    };
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -51,6 +58,7 @@ export default function UserInfoPopup({ user, children }: UserInfoProps) {
                         </div>
                     </div>
                 </div>
+                <Button onClick={handleSendMessage}>send message</Button>
             </DialogContent>
         </Dialog>
     );

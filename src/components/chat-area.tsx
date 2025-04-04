@@ -22,10 +22,11 @@ export default function ChatArea() {
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const { selectChannel, currentChannel } = useChatStore();
     const { messages, sendMessage } = useMessages(currentChannel?._id || null);
+    const { createChannel } = useChannels();
     const { getMe } = useUsers();
     const me = getMe();
     const { getChannel } = useChannels();
-    const channelInfo = getChannel(currentChannel?._id);
+    let channelInfo = getChannel(currentChannel?._id || undefined);
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -34,15 +35,38 @@ export default function ChatArea() {
         }
     }, [messages]);
 
-    const handleSendMessage = () => {
-        if (messageText.trim() && currentChannel) {
-            sendMessage({
-                channelId: currentChannel._id,
-                text: messageText,
-                timestamp: new Date().toISOString(),
-            });
-            setMessageText("");
+    if (!currentChannel) {
+        return;
+    }
+
+    if (!channelInfo) {
+        channelInfo = {
+            type: currentChannel.type,
+            name: currentChannel.name,
+            members: [
+                // @ts-ignore
+                { name: currentChannel.name, _id: currentChannel.userId },
+            ],
+            canSendMessage: true,
+        };
+    }
+
+    const handleSendMessage = async () => {
+        if (!messageText.trim() || !currentChannel) return;
+        if (currentChannel._id === null) {
+            if (!currentChannel.userId) return;
+            const id = await createChannel(currentChannel.name, "private", [
+                currentChannel.userId,
+            ]);
+            currentChannel._id = id;
         }
+
+        sendMessage({
+            channelId: currentChannel._id,
+            text: messageText,
+            timestamp: new Date().toISOString(),
+        });
+        setMessageText("");
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
