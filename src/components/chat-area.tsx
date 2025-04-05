@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +14,7 @@ import { ChannelIcon } from "./ui/channel-icon";
 import UserInfoPopup from "./UserInfoPopup";
 import { User } from "@/lib/types";
 import UserProfile from "./UserProfile";
+import parse, { DOMNode, domToReact } from "html-react-parser";
 
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
@@ -121,6 +120,22 @@ export default function ChatArea() {
         );
     }
 
+    const options = {
+        replace: (domNode: DOMNode) => {
+            if (domNode.type === "tag" && domNode.name === "a") {
+                return (
+                    <a
+                        href={domNode.attribs.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 underline"
+                    >
+                        {domToReact(domNode.children as DOMNode[])}
+                    </a>
+                );
+            }
+        },
+    };
     return (
         <div className="flex-1 flex flex-col h-full overflow-scroll bg-background">
             <div className="px-3 py-4 border-b bg-card h-[70px] flex align-center">
@@ -194,7 +209,7 @@ export default function ChatArea() {
                                             }`}
                                         >
                                             <p className="text-sm">
-                                                {message.text}
+                                                {parse(message.text, options)}
                                             </p>
                                         </div>
                                         <div

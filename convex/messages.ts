@@ -2,6 +2,8 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { getUser, isUserAdminOfChannel, isUserMemberOfChannel } from "./auth";
+import Autolinker from "autolinker";
+import xss from "xss";
 
 export const list = query({
     args: { channelId: v.id("channels") },
@@ -53,7 +55,11 @@ export const send = mutation({
 
         const id = await ctx.db.insert("messages", {
             channelId: args.channelId,
-            text: args.text,
+            text: xss(Autolinker.link(args.text), {
+                whiteList: {
+                    a: ["href", "title", "target"],
+                },
+            }),
             userId: user._id,
             timestamp: Date.now(),
         });
