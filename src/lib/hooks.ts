@@ -81,8 +81,8 @@ export function useUsers() {
     const searchUsers = (query: string) =>
         useQuery(api.users.search, { query });
 
-    const createUser = async (name: string) => {
-        return await createUserMutation({ name });
+    const createUser = async (name: string, username?: string) => {
+        return await createUserMutation({ name, username });
     };
 
     const updateLastSeen = async () => {

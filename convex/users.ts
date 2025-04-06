@@ -34,6 +34,7 @@ export const getById = query({
 export const create = mutation({
     args: {
         name: v.string(),
+        username: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -53,8 +54,19 @@ export const create = mutation({
             return existing._id;
         }
 
+        if (args.username) {
+            const result = await ctx.db
+                .query("users")
+                .filter((q) => q.eq(q.field("username"), args.username))
+                .first();
+            if (result) {
+                throw new ConvexError("Username already taken");
+            }
+        }
+
         const id = await ctx.db.insert("users", {
             name: args.name,
+            username: args.username,
             tokenIdentifier: identity.tokenIdentifier,
         });
 
