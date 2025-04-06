@@ -21,10 +21,9 @@ export default function ChatArea() {
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const { selectChannel, currentChannel } = useChatStore();
     const { messages, sendMessage } = useMessages(currentChannel?._id || null);
-    const { createChannel } = useChannels();
+    const { getChannel, createChannel } = useChannels();
     const { getMe } = useUsers();
     const me = getMe();
-    const { getChannel } = useChannels();
     let channelInfo = getChannel(currentChannel?._id || undefined);
 
     useEffect(() => {

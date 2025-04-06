@@ -18,7 +18,7 @@ interface ChatListProps {
     items: Array<{
         _id: Id<"channels">;
         name: string;
-        user?: User;
+        user?: User | null;
     } | null>;
     icon: React.ElementType;
     onCreateItem: (name: string) => Promise<void>;
@@ -118,6 +118,7 @@ export const ChatList: React.FC<ChatListProps> = ({
                                     _id: item._id,
                                     name: item.name,
                                     type: type,
+                                    userId: null,
                                 })
                             }
                         >
