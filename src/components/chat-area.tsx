@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatStore } from "@/lib/store";
 import { useChannels, useMessages } from "@/lib/hooks";
-import { SendIcon, ArrowLeftIcon } from "lucide-react";
+import { SendIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUsers } from "@/lib/hooks";
 import ChannelInfoPopup from "./ChannelInfoPopup";
@@ -15,6 +15,7 @@ import UserInfoPopup from "./UserInfoPopup";
 import { User } from "@/lib/types";
 import UserProfile from "./UserProfile";
 import parse, { DOMNode, domToReact } from "html-react-parser";
+import { BackIcon } from "./ui/back-icon";
 
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
@@ -143,7 +144,7 @@ export default function ChatArea() {
                         onClick={() => selectChannel(null)}
                         className="mr-3 md:hidden"
                     >
-                        <ArrowLeftIcon className="h-5 w-5" />
+                        <BackIcon />
                     </button>
                     <ChannelTopInfo />
                 </div>

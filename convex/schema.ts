@@ -46,8 +46,13 @@ export default defineSchema({
     }).index("by_channel", ["channelId"]),
 
     contacts: defineTable({
-        userId: v.id("users"),
+        ownerId: v.id("users"),
         name: v.string(),
-        contactIds: v.array(v.id("users")),
-    }),
+        contactId: v.id("users"),
+    })
+        .index("by_ownerId_contactId", ["ownerId", "contactId"])
+        .searchIndex("search_contact", {
+            filterFields: ["ownerId"],
+            searchField: "name",
+        }),
 });

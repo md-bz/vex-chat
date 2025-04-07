@@ -1,7 +1,6 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import { getById } from "../../convex/users";
 
 export function useMessages(channelId: string | null) {
     // Convert string ID to Convex ID if it exists
@@ -98,5 +97,38 @@ export function useUsers() {
         getMe,
         searchUsers,
         getUserById,
+    };
+}
+
+export function useContacts() {
+    const contacts = useQuery(api.contacts.getContacts) || [];
+    const addContactMutation = useMutation(api.contacts.addContact);
+    const deleteContactMutation = useMutation(api.contacts.deleteContact);
+    const updateContactMutation = useMutation(api.contacts.updateContact);
+    const searchContactsQuery = (query: string) =>
+        useQuery(api.contacts.searchContacts, { query });
+
+    const addContact = async (contactId: Id<"users">, contactName: string) => {
+        return await addContactMutation({ contactId, contactName });
+    };
+
+    const deleteContact = async (contactId: Id<"contacts">) => {
+        return await deleteContactMutation({ contactId });
+    };
+
+    const updateContact = async (contactId: Id<"contacts">, name: string) => {
+        return await updateContactMutation({ contactId, name });
+    };
+
+    const searchContacts = (query: string) => {
+        return searchContactsQuery(query) || [];
+    };
+
+    return {
+        contacts,
+        addContact,
+        deleteContact,
+        updateContact,
+        searchContacts,
     };
 }

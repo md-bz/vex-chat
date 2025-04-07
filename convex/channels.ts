@@ -4,6 +4,19 @@ import { getUser, isUserAdminOfChannel } from "./auth";
 import { nanoid } from "nanoid";
 import { Id } from "./_generated/dataModel";
 
+export async function getContactInfo(
+    ctx: QueryCtx,
+    userId: Id<"users">,
+    ownerId: Id<"users">
+) {
+    return await ctx.db
+        .query("contacts")
+        .withIndex("by_ownerId_contactId", (q) =>
+            q.eq("ownerId", ownerId).eq("contactId", userId)
+        )
+        .first();
+}
+
 export async function getSharedChannels(
     ctx: QueryCtx | MutationCtx,
     user1: Id<"users">,
@@ -81,9 +94,23 @@ export const getAll = query({
                 if (!otherMember) return null;
                 const otherUser = await ctx.db.get(otherMember.userId);
 
+                if (!otherUser) return null;
+
+                const otherMemberContact = await getContactInfo(
+                    ctx,
+                    otherMember.userId,
+                    user._id
+                );
+                if (otherMemberContact) {
+                    otherUser.name = otherMemberContact.name;
+                }
+
+                const { _creationTime, tokenIdentifier, ...sanitizedUser } =
+                    otherUser;
+
                 return {
                     ...channel,
-                    user: otherUser,
+                    user: sanitizedUser,
                 };
             })
         );
@@ -116,8 +143,18 @@ export const get = query({
         const members = hasPermission
             ? await Promise.all(
                   channelMembers.map((m) =>
-                      ctx.db.get(m.userId).then((m) => {
+                      ctx.db.get(m.userId).then(async (m) => {
                           if (!m) return null;
+
+                          const contact = await getContactInfo(
+                              ctx,
+                              m._id,
+                              user._id
+                          );
+                          if (contact) {
+                              m.name = contact.name;
+                          }
+
                           return {
                               _id: m._id,
                               name: m.name,
