@@ -1,16 +1,30 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { getUser } from "./auth";
+import { getSanitizedUser } from "./helper";
 
 export const getContacts = query({
     args: {},
-    handler: async (ctx, args) => {
+    handler: async (ctx) => {
         const user = await getUser(ctx);
 
-        return ctx.db
+        const contacts = await ctx.db
             .query("contacts")
             .withIndex("by_ownerId_contactId", (q) => q.eq("ownerId", user._id))
             .collect();
+
+        return Promise.all(
+            contacts.map(async (contact) => {
+                const user = await ctx.db.get(contact.contactId);
+                if (!user) return null;
+                const sanitizedUser = getSanitizedUser(user);
+                sanitizedUser.name = contact.name;
+                return {
+                    ...contact,
+                    user: sanitizedUser,
+                };
+            })
+        );
     },
 });
 

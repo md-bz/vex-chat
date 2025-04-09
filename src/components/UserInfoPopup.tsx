@@ -51,9 +51,9 @@ export default function UserInfoPopup({ user, children }: UserInfoProps) {
     const [name, setName] = useState(user.name);
 
     const isContact = contacts.some(
-        (contact) => contact.contactId === user._id
+        (contact) => contact?.contactId === user._id
     );
-    const contact = contacts.find((contact) => contact.contactId === user._id);
+    const contact = contacts.find((contact) => contact?.contactId === user._id);
 
     const handleSendMessage = async () => {
         selectChannel({
