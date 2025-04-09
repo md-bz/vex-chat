@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { getUser } from "./auth";
+import { getSanitizedUser } from "./helper";
 
 export const getAll = query({
     handler: async (ctx) => {
@@ -25,9 +26,7 @@ export const getById = query({
             throw new ConvexError("User not found");
         }
 
-        const { _creationTime, tokenIdentifier, ...sanitizedUser } = user;
-
-        return sanitizedUser;
+        return getSanitizedUser(user);
     },
 });
 

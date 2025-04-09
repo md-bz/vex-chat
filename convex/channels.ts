@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values";
 import { getUser, isUserAdminOfChannel } from "./auth";
 import { nanoid } from "nanoid";
 import { Id } from "./_generated/dataModel";
+import { getSanitizedUser } from "./helper";
 
 export async function getContactInfo(
     ctx: QueryCtx,
@@ -105,8 +106,7 @@ export const getAll = query({
                     otherUser.name = otherMemberContact.name;
                 }
 
-                const { _creationTime, tokenIdentifier, ...sanitizedUser } =
-                    otherUser;
+                const sanitizedUser = getSanitizedUser(otherUser);
 
                 return {
                     ...channel,
