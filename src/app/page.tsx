@@ -10,7 +10,7 @@ import { SignedIn, SignedOut, SignIn } from "@clerk/nextjs";
 
 export default function Home() {
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-50">
+        <main className="flex min-h-screen flex-col items-center justify-center p-4">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>Welcome to ConvexChat</CardTitle>
