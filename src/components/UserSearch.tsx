@@ -2,12 +2,11 @@
 
 import { Input } from "@/components/ui/input";
 import { SearchIcon, XIcon } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useUsers } from "@/lib/hooks";
 import { Skeleton } from "./ui/skeleton";
-import UserInfoPopup from "./UserInfoPopup";
+import { UserCard } from "./UserCard";
 
 export function UserSearch() {
     const [query, setQuery] = useState("");
@@ -62,21 +61,7 @@ export function UserSearch() {
                     ) : results.length > 0 ? (
                         <div className="flex flex-col p-1">
                             {results.map((user) => (
-                                <UserInfoPopup user={user} key={user._id}>
-                                    <div className="flex items-center p-2 hover:bg-accent rounded cursor-pointer gap-2">
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={user.imageUrl} />
-                                            <AvatarFallback>
-                                                {user.name
-                                                    ?.charAt(0)
-                                                    .toUpperCase()}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <span className="text-sm truncate">
-                                            {user.name}
-                                        </span>
-                                    </div>
-                                </UserInfoPopup>
+                                <UserCard user={user} key={user._id} />
                             ))}
                         </div>
                     ) : (
