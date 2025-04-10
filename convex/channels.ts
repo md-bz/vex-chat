@@ -78,42 +78,47 @@ export const getAll = query({
             .withIndex("by_userId", (q) => q.eq("userId", user._id))
             .collect();
 
-        return Promise.all(
-            userChannels.map(async (membership) => {
-                const channel = await ctx.db.get(membership.channelId);
-                if (!channel) return null;
-                if (channel.type !== "private") return channel;
+        return (
+            await Promise.all(
+                userChannels.map(async (membership) => {
+                    const channel = await ctx.db.get(membership.channelId);
+                    if (!channel) return null;
+                    if (channel.type !== "private") return channel;
 
-                const otherMember = await ctx.db
-                    .query("channelMembers")
-                    .withIndex("by_channelId", (q) =>
-                        q.eq("channelId", channel._id)
-                    )
-                    .filter((q) => q.neq(q.field("userId"), user._id))
-                    .first();
+                    const otherMember = await ctx.db
+                        .query("channelMembers")
+                        .withIndex("by_channelId", (q) =>
+                            q.eq("channelId", channel._id)
+                        )
+                        .filter((q) => q.neq(q.field("userId"), user._id))
+                        .first();
 
-                if (!otherMember) return null;
-                const otherUser = await ctx.db.get(otherMember.userId);
+                    if (!otherMember) return null;
+                    const otherUser = await ctx.db.get(otherMember.userId);
 
-                if (!otherUser) return null;
+                    if (!otherUser) return null;
 
-                const otherMemberContact = await getContactInfo(
-                    ctx,
-                    otherMember.userId,
-                    user._id
-                );
-                if (otherMemberContact) {
-                    otherUser.name = otherMemberContact.name;
-                }
+                    const otherMemberContact = await getContactInfo(
+                        ctx,
+                        otherMember.userId,
+                        user._id
+                    );
+                    if (otherMemberContact) {
+                        otherUser.name = otherMemberContact.name;
+                    }
 
-                const sanitizedUser = getSanitizedUser(otherUser);
+                    const sanitizedUser = getSanitizedUser(otherUser);
 
-                return {
-                    ...channel,
-                    user: sanitizedUser,
-                };
-            })
-        );
+                    return {
+                        ...channel,
+                        user: sanitizedUser,
+                    };
+                })
+            )
+        ).filter((c) => {
+            if (c === null) console.warn("Channel not found", c);
+            return c !== null;
+        });
     },
 });
 

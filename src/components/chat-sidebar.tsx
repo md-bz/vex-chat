@@ -3,16 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
-import {
-    HashIcon,
-    MessageCircleIcon,
-    SearchIcon,
-    UsersIcon,
-} from "lucide-react";
-import { useChannels, useUsers } from "@/lib/hooks";
-
+import { useUsers } from "@/lib/hooks";
 import { useClerk } from "@clerk/nextjs";
-import { Id } from "../../convex/_generated/dataModel";
 import { ChatList } from "./ChatList";
 import { useChatStore } from "@/lib/store";
 import { UserSearch } from "./UserSearch";
@@ -22,25 +14,11 @@ import { BackIcon } from "./ui/back-icon";
 
 export default function ChatSidebar() {
     const router = useRouter();
-    const { channels, groups, privates, createChannel } = useChannels();
     const { getMe } = useUsers();
     const { signOut } = useClerk();
 
-    // Use getMe() to get the current user
     const me = getMe();
     const username = me?.name;
-
-    const handleCreateChannel = async (name: string) => {
-        await createChannel(name, "channel");
-    };
-
-    const handleCreateGroup = async (name: string) => {
-        await createChannel(name, "group");
-    };
-
-    const handleCreateDm = async (userId: string) => {
-        await createChannel("name", "private", [userId as Id<"users">]);
-    };
 
     const { currentChannel } = useChatStore();
     const [isContactsActive, setIsContactsActive] = useState(false);
@@ -76,26 +54,7 @@ export default function ChatSidebar() {
                     <UserSearch />
                     <ScrollArea className="flex-1">
                         <div className="py-4">
-                            <ChatList
-                                type="channel"
-                                items={channels}
-                                icon={HashIcon}
-                                onCreateItem={handleCreateChannel}
-                            />
-
-                            <ChatList
-                                type="group"
-                                items={groups}
-                                icon={UsersIcon}
-                                onCreateItem={handleCreateGroup}
-                            />
-
-                            <ChatList
-                                type="private"
-                                items={privates}
-                                icon={MessageCircleIcon}
-                                onCreateItem={handleCreateDm}
-                            />
+                            <ChatList />
                         </div>
                     </ScrollArea>
                     <Button

@@ -41,17 +41,6 @@ export function useChannels() {
 
     const getChannel = (id?: Id<"channels">) =>
         useQuery(api.channels.get, id ? { id } : "skip");
-
-    const channels = allChannels.filter(
-        (channel: any) => channel.type === "channel"
-    );
-    const groups = allChannels.filter(
-        (channel: any) => channel.type === "group"
-    );
-    const privates = allChannels.filter(
-        (channel: any) => channel.type === "private"
-    );
-
     const createChannel = async (
         name: string,
         type: "channel" | "group" | "private",
@@ -65,9 +54,7 @@ export function useChannels() {
     };
 
     return {
-        channels,
-        groups,
-        privates,
+        allChannels,
         createChannel,
         getChannel,
     };

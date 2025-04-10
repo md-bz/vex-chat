@@ -1,134 +1,100 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PlusIcon } from "lucide-react";
 import { useChatStore } from "@/lib/store";
+import { useChannels } from "@/lib/hooks";
 import {
-    Dialog,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { Id } from "../../convex/_generated/dataModel";
-import { DialogContent } from "@radix-ui/react-dialog";
-import { User } from "@/lib/types";
+    HashIcon,
+    UsersIcon,
+    MessageCircleIcon,
+    MessageSquareIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface ChatListProps {
-    type: "channel" | "group" | "private";
-    items: Array<{
-        _id: Id<"channels">;
-        name: string;
-        user?: User | null;
-    } | null>;
-    icon: React.ElementType;
-    onCreateItem: (name: string) => Promise<void>;
-}
-
-export const ChatList: React.FC<ChatListProps> = ({
-    type,
-    items,
-    icon: Icon,
-    onCreateItem,
-}) => {
+export const ChatList = () => {
     const { currentChannel, selectChannel } = useChatStore();
-    const [newItemName, setNewItemName] = useState("");
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    let { allChannels } = useChannels();
 
-    const handleCreate = async () => {
-        if (newItemName.trim()) {
-            await onCreateItem(newItemName.trim());
-            setNewItemName("");
-            setIsDialogOpen(false);
-        }
-    };
-
-    const getDialogTitle = () => {
-        switch (type) {
-            case "channel":
-                return "Create a new channel";
-            case "group":
-                return "Create a new group";
-            case "private":
-                return "Start a new conversation";
-        }
-    };
-
-    const getPlaceholder = () => {
-        switch (type) {
-            case "channel":
-                return "Channel name";
-            case "group":
-                return "Group name";
-            case "private":
-                return "User Id";
-        }
-    };
+    const tabs = [
+        {
+            id: "all",
+            label: "All Chats",
+            icon: MessageSquareIcon,
+            items: allChannels,
+        },
+        {
+            id: "channels",
+            label: "Channels",
+            icon: HashIcon,
+            items: allChannels.filter((c) => c.type === "channel"),
+        },
+        {
+            id: "groups",
+            label: "Groups",
+            icon: UsersIcon,
+            items: allChannels.filter((c) => c.type === "group"),
+        },
+        {
+            id: "private",
+            label: "Private",
+            icon: MessageCircleIcon,
+            items: allChannels.filter((c) => c.type === "private"),
+        },
+    ];
 
     return (
-        <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm font-semibold uppercase tracking-wider">
-                    {type === "channel"
-                        ? "Channels"
-                        : type === "group"
-                          ? "Groups"
-                          : "Direct Messages"}
-                </h2>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-5 w-5 rounded-sm"
-                        >
-                            <PlusIcon className="h-4 w-4" />
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>{getDialogTitle()}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 pt-4">
-                            <Input
-                                placeholder={getPlaceholder()}
-                                value={newItemName}
-                                onChange={(e) => setNewItemName(e.target.value)}
-                            />
-                            <Button onClick={handleCreate}>
-                                {type === "channel"
-                                    ? "Create Channel"
-                                    : type === "group"
-                                      ? "Create Group"
-                                      : "Start Conversation"}
-                            </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            </div>
-            <div className="space-y-1">
-                {items?.map((item) => {
-                    if (!item) return null;
+        <Tabs defaultValue="all" className="w-full">
+            <TabsList className="grid grid-cols-4 w-full mb-4">
+                {tabs.map((tab) => {
+                    const Icon = tab.icon;
                     return (
-                        <Button
-                            key={item._id}
-                            variant="ghost"
-                            className={`w-full justify-start pl-2 ${currentChannel?._id === item._id ? "bg-primary/20" : ""}`}
-                            onClick={() =>
-                                selectChannel({
-                                    _id: item._id,
-                                    name: item.name,
-                                    type: type,
-                                    userId: null,
-                                })
-                            }
+                        <TabsTrigger
+                            key={tab.id}
+                            value={tab.id}
+                            className="flex items-center gap-1"
                         >
-                            <Icon className="h-4 w-4 mr-2" />
-
-                            {type === "private" ? item.user?.name : item.name}
-                        </Button>
+                            <Icon className="h-4 w-4" />
+                            <span className="hidden sm:inline">
+                                {tab.label}
+                            </span>
+                        </TabsTrigger>
                     );
                 })}
-            </div>
-        </div>
+            </TabsList>
+
+            {tabs.map((tab) => (
+                <TabsContent key={tab.id} value={tab.id}>
+                    <div className="space-y-1">
+                        {tab.items?.map((item) => {
+                            if (!item) return null;
+                            return (
+                                <Button
+                                    key={item._id}
+                                    variant="ghost"
+                                    className={`w-full justify-start pl-2 ${
+                                        currentChannel?._id === item._id
+                                            ? "bg-primary/20"
+                                            : ""
+                                    }`}
+                                    onClick={() =>
+                                        selectChannel({
+                                            _id: item._id,
+                                            name: item.name,
+                                            type: item.type,
+                                            //@ts-ignore
+                                            userId: item.user?._id || null,
+                                        })
+                                    }
+                                >
+                                    <tab.icon className="h-4 w-4 mr-2" />
+                                    {item.type === "private"
+                                        ? //@ts-ignore
+                                          item.user?.name
+                                        : item.name}
+                                </Button>
+                            );
+                        })}
+                    </div>
+                </TabsContent>
+            ))}
+        </Tabs>
     );
 };
