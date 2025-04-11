@@ -190,6 +190,7 @@ export const create = mutation({
         ),
         members: v.optional(v.array(v.id("users"))),
     },
+
     handler: async (ctx, args) => {
         const user = await getUser(ctx);
 
@@ -221,7 +222,7 @@ export const create = mutation({
             await ctx.db.insert("channelMembers", {
                 channelId: id,
                 userId: member,
-                isAdmin: false,
+                isAdmin: member === user._id ? true : false,
             });
         }
         return id;
