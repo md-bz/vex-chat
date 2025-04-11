@@ -46,15 +46,8 @@ export const ChatList = () => {
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
-                        <TabsTrigger
-                            key={tab.id}
-                            value={tab.id}
-                            className="flex items-center gap-1"
-                        >
+                        <TabsTrigger key={tab.id} value={tab.id}>
                             <Icon className="h-4 w-4" />
-                            <span className="hidden sm:inline">
-                                {tab.label}
-                            </span>
                         </TabsTrigger>
                     );
                 })}
