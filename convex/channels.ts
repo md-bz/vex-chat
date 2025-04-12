@@ -81,9 +81,21 @@ export const getAll = query({
         return (
             await Promise.all(
                 userChannels.map(async (membership) => {
-                    const channel = await ctx.db.get(membership.channelId);
+                    let channel = await ctx.db.get(membership.channelId);
                     if (!channel) return null;
-                    if (channel.type !== "private") return channel;
+
+                    const messages = (
+                        await ctx.db
+                            .query("messages")
+                            .withIndex("by_channel", (q) =>
+                                q.eq("channelId", membership.channelId)
+                            )
+                            .order("desc")
+                            .take(10)
+                    ).reverse();
+
+                    if (channel.type !== "private")
+                        return { ...channel, messages };
 
                     const otherMember = await ctx.db
                         .query("channelMembers")
@@ -112,13 +124,20 @@ export const getAll = query({
                     return {
                         ...channel,
                         user: sanitizedUser,
+                        messages,
                     };
                 })
             )
-        ).filter((c) => {
-            if (c === null) console.warn("Channel not found", c);
-            return c !== null;
-        });
+        )
+            .filter((c) => {
+                if (c === null) console.warn("Channel not found", c);
+                return c !== null;
+            })
+            .sort(
+                (a, b) =>
+                    b.messages[b.messages.length - 1]?._creationTime -
+                    a.messages[a.messages.length - 1]?._creationTime
+            );
     },
 });
 

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatTime } from "@/lib/utils";
 
 export const ChatList = () => {
     const { currentChannel, selectChannel } = useChatStore();
@@ -40,6 +41,15 @@ export const ChatList = () => {
         },
     ];
 
+    const getLastMessagePreview = (messages: any[]) => {
+        if (!messages || messages.length === 0) return null;
+        const lastMessage = messages[messages.length - 1];
+        return {
+            text: lastMessage.text,
+            time: formatTime(lastMessage._creationTime),
+        };
+    };
+
     return (
         <Tabs defaultValue="all" className="w-full">
             <TabsList className="grid grid-cols-4 w-full mb-4">
@@ -58,11 +68,15 @@ export const ChatList = () => {
                     <div className="space-y-1">
                         {tab.items?.map((item) => {
                             if (!item) return null;
+                            const lastMessage = getLastMessagePreview(
+                                item.messages
+                            );
+
                             return (
                                 <Button
                                     key={item._id}
                                     variant="ghost"
-                                    className={`w-full justify-start pl-2 ${
+                                    className={`w-full justify-start pl-2 h-auto py-2 ${
                                         currentChannel?._id === item._id
                                             ? "bg-primary/20"
                                             : ""
@@ -77,11 +91,27 @@ export const ChatList = () => {
                                         })
                                     }
                                 >
-                                    <tab.icon className="h-4 w-4 mr-2" />
-                                    {item.type === "private"
-                                        ? //@ts-ignore
-                                          item.user?.name
-                                        : item.name}
+                                    <div className="flex flex-col items-start w-full">
+                                        <div className="flex items-center w-full">
+                                            <tab.icon className="h-4 w-4 mr-2 " />
+                                            <span className="font-medium truncate">
+                                                {item.type === "private"
+                                                    ? //@ts-ignore
+                                                      item.user?.name
+                                                    : item.name}
+                                            </span>
+                                            {lastMessage && (
+                                                <span className="ml-auto text-xs text-muted-foreground">
+                                                    {lastMessage.time}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {lastMessage && (
+                                            <p className="text-muted-foreground truncate w-full text-start">
+                                                {lastMessage.text}
+                                            </p>
+                                        )}
+                                    </div>
                                 </Button>
                             );
                         })}
