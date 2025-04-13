@@ -55,7 +55,8 @@ export const send = mutation({
 
         const user = await getUser(ctx);
 
-        await updateChannelLastSeen(ctx, user._id, channel._id, timestamp);
+        // few ms delay to avoid the last message being unseen when u send it yourself
+        await updateChannelLastSeen(ctx, user._id, channel._id, timestamp + 5);
 
         const id = await ctx.db.insert("messages", {
             channelId: channel._id,
