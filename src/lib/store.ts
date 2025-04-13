@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import { Id } from "../../convex/_generated/dataModel";
+import { channelLastSeen, User } from "./types";
 
 interface Channel {
     _id: Id<"channels"> | null;
     name: string;
     type: "channel" | "group" | "private";
     userId: Id<"users"> | null;
-    lastSeen?: number;
+    lastSeen?: channelLastSeen[];
 }
 
 interface ChatStore {

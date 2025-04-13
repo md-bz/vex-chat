@@ -1,5 +1,5 @@
 import { useChatStore } from "@/lib/store";
-import { useChannels } from "@/lib/hooks";
+import { useChannels, useUsers } from "@/lib/hooks";
 import {
     HashIcon,
     UsersIcon,
@@ -14,11 +14,11 @@ import { Badge } from "@/components/ui/badge";
 export const ChatList = () => {
     const { currentChannel, selectChannel } = useChatStore();
     let { allChannels } = useChannels();
+    const { getMe } = useUsers();
+    const me = getMe();
 
-    const getUnreadCount = (channel: any) => {
-        if (!channel.channelLastSeen || !channel.messages?.length) return 0;
-
-        const lastSeenTime = channel.channelLastSeen;
+    const getUnreadCount = (channel: any, lastSeenTime: number) => {
+        if (!channel.messages?.length) return 0;
         const unreadMessages = channel.messages.filter(
             (msg: any) => msg._creationTime > lastSeenTime
         );
@@ -83,7 +83,15 @@ export const ChatList = () => {
                             const lastMessage = getLastMessagePreview(
                                 item.messages
                             );
-                            const unreadCount = getUnreadCount(item);
+
+                            const myLastSeen =
+                                item.channelLastSeen.find(
+                                    (c) => c.userId === me?._id
+                                )?.lastSeenAt || 0;
+                            const unreadCount = getUnreadCount(
+                                item,
+                                myLastSeen
+                            );
 
                             return (
                                 <Button

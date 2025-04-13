@@ -14,8 +14,8 @@ export async function updateChannelLastSeen(
 ) {
     const existing = await ctx.db
         .query("channelLastSeen")
-        .withIndex("by_user_channel", (q) =>
-            q.eq("userId", userId).eq("channelId", channelId)
+        .withIndex("by_channel_user", (q) =>
+            q.eq("channelId", channelId).eq("userId", userId)
         )
         .unique();
 
@@ -34,13 +34,10 @@ export async function updateChannelLastSeen(
 
 export function getChannelLastSeenInternal(
     ctx: MutationCtx | QueryCtx,
-    userId: Id<"users">,
     channelId: Id<"channels">
 ) {
     return ctx.db
         .query("channelLastSeen")
-        .withIndex("by_user_channel", (q) =>
-            q.eq("userId", userId).eq("channelId", channelId)
-        )
-        .first();
+        .withIndex("by_channel_user", (q) => q.eq("channelId", channelId))
+        .collect();
 }

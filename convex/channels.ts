@@ -100,16 +100,15 @@ export const getAll = query({
                             .take(20)
                     ).reverse();
 
-                    const channelSeen = await getChannelLastSeenInternal(
+                    const channelLastSeen = await getChannelLastSeenInternal(
                         ctx,
-                        user._id,
                         membership.channelId
                     );
                     if (channel.type !== "private")
                         return {
                             ...channel,
                             messages,
-                            channelLastSeen: channelSeen?.lastSeenAt,
+                            channelLastSeen,
                         };
 
                     const otherMember = await ctx.db
@@ -140,7 +139,7 @@ export const getAll = query({
                         ...channel,
                         user: sanitizedUser,
                         messages,
-                        channelLastSeen: channelSeen?.lastSeenAt,
+                        channelLastSeen,
                     };
                 })
             )
@@ -369,6 +368,6 @@ export const getChannelLastSeen = mutation({
     handler: async (ctx, args) => {
         const user = await getUser(ctx);
 
-        return getChannelLastSeenInternal(ctx, user._id, args.channelId);
+        return getChannelLastSeenInternal(ctx, args.channelId);
     },
 });

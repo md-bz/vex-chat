@@ -22,3 +22,9 @@ export interface Channel {
     type: "channel" | "group" | "dm";
     members?: string[];
 }
+
+export interface channelLastSeen {
+    userId: Id<"users">;
+    channelId: Id<"channels">;
+    lastSeenAt: number;
+}

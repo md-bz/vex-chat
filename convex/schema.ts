@@ -49,7 +49,7 @@ export default defineSchema({
         userId: v.id("users"),
         channelId: v.id("channels"),
         lastSeenAt: v.number(),
-    }).index("by_user_channel", ["userId", "channelId"]),
+    }).index("by_channel_user", ["channelId", "userId"]),
 
     contacts: defineTable({
         ownerId: v.id("users"),

@@ -38,6 +38,7 @@ export function useMessages(channelId: string | null) {
 export function useChannels() {
     const allChannels = useQuery(api.channels.getAll) || [];
     const createChannelMutation = useMutation(api.channels.create);
+    const seenChannelMutation = useMutation(api.channels.seenChannel);
 
     const getChannel = (id?: Id<"channels">) =>
         useQuery(api.channels.get, id ? { id } : "skip");
@@ -57,6 +58,7 @@ export function useChannels() {
         allChannels,
         createChannel,
         getChannel,
+        seenChannelMutation,
     };
 }
 
