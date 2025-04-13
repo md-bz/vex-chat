@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatStore } from "@/lib/store";
 import { useChannels, useMessages } from "@/lib/hooks";
-import { SendIcon } from "lucide-react";
+import { SendIcon, Check, CheckCheck } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUsers } from "@/lib/hooks";
 import ChannelInfoPopup from "./ChannelInfoPopup";
@@ -16,6 +16,7 @@ import { User } from "@/lib/types";
 import UserProfile from "./UserProfile";
 import parse, { DOMNode, domToReact } from "html-react-parser";
 import { BackIcon } from "./ui/back-icon";
+import { Id } from "../../convex/_generated/dataModel";
 
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
@@ -26,6 +27,7 @@ export default function ChatArea() {
     const { getMe } = useUsers();
     const me = getMe();
     let channelInfo = getChannel(currentChannel?._id || undefined);
+    const lastSeenData = currentChannel?.lastSeen || [];
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -73,6 +75,26 @@ export default function ChatArea() {
             e.preventDefault();
             handleSendMessage();
         }
+    };
+
+    const getMessageStatus = (message: {
+        _id: Id<"messages">;
+        _creationTime: number;
+        userId: Id<"users">;
+    }) => {
+        if (!lastSeenData || message.userId !== me?._id) return null;
+
+        const seenByOther = lastSeenData.find(
+            (seen) =>
+                seen.userId !== me?._id &&
+                seen.lastSeenAt >= message._creationTime
+        );
+
+        return seenByOther ? (
+            <CheckCheck className="h-3 w-3 ml-1 text-blue-500" />
+        ) : (
+            <Check className="h-3 w-3 ml-1 text-muted-foreground" />
+        );
     };
 
     if (!currentChannel) {
@@ -136,6 +158,7 @@ export default function ChatArea() {
             }
         },
     };
+
     return (
         <div className="flex-1 flex flex-col h-full overflow-scroll bg-background">
             <div className="px-3 py-4 border-b bg-card h-[70px] flex align-center">
@@ -213,8 +236,9 @@ export default function ChatArea() {
                                             </p>
                                         </div>
                                         <div
-                                            className={`text-xs text-muted-foreground ${message.userId === me?._id ? "text-right" : "text-left"}`}
+                                            className={`text-xs text-muted-foreground flex items-center gap-1 ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
                                         >
+                                            {getMessageStatus(message)}
                                             {new Date(
                                                 message.timestamp
                                             ).toLocaleTimeString([], {
