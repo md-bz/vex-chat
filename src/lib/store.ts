@@ -6,6 +6,7 @@ interface Channel {
     name: string;
     type: "channel" | "group" | "private";
     userId: Id<"users"> | null;
+    lastSeen?: number;
 }
 
 interface ChatStore {

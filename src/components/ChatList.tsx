@@ -9,10 +9,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatTime } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 export const ChatList = () => {
     const { currentChannel, selectChannel } = useChatStore();
     let { allChannels } = useChannels();
+
+    const getUnreadCount = (channel: any) => {
+        if (!channel.channelLastSeen || !channel.messages?.length) return 0;
+
+        const lastSeenTime = channel.channelLastSeen;
+        const unreadMessages = channel.messages.filter(
+            (msg: any) => msg._creationTime > lastSeenTime
+        );
+
+        return unreadMessages.length >= 20 ? "20+" : unreadMessages.length;
+    };
 
     const tabs = [
         {
@@ -71,6 +83,7 @@ export const ChatList = () => {
                             const lastMessage = getLastMessagePreview(
                                 item.messages
                             );
+                            const unreadCount = getUnreadCount(item);
 
                             return (
                                 <Button
@@ -88,23 +101,34 @@ export const ChatList = () => {
                                             type: item.type,
                                             //@ts-ignore
                                             userId: item.user?._id || null,
+                                            lastSeen: item.channelLastSeen,
                                         })
                                     }
                                 >
                                     <div className="flex flex-col items-start w-full">
                                         <div className="flex items-center w-full">
-                                            <tab.icon className="h-4 w-4 mr-2 " />
+                                            <tab.icon className="h-4 w-4 mr-2" />
                                             <span className="font-medium truncate">
                                                 {item.type === "private"
                                                     ? //@ts-ignore
                                                       item.user?.name
                                                     : item.name}
                                             </span>
-                                            {lastMessage && (
-                                                <span className="ml-auto text-xs text-muted-foreground">
-                                                    {lastMessage.time}
-                                                </span>
-                                            )}
+                                            <div className="ml-auto flex items-center gap-2">
+                                                {lastMessage && (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {lastMessage.time}
+                                                    </span>
+                                                )}
+                                                {unreadCount > 0 && (
+                                                    <Badge
+                                                        variant="default"
+                                                        className="h-5 w-5 p-0 flex items-center justify-center"
+                                                    >
+                                                        {unreadCount}
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </div>
                                         {lastMessage && (
                                             <p className="text-muted-foreground truncate w-full text-start">

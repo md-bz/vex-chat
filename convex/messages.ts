@@ -4,6 +4,7 @@ import { ConvexError } from "convex/values";
 import { getUser, isUserAdminOfChannel, isUserMemberOfChannel } from "./auth";
 import Autolinker from "autolinker";
 import xss from "xss";
+import { updateChannelLastSeen } from "./helper";
 
 export const list = query({
     args: { channelId: v.id("channels") },
@@ -40,6 +41,7 @@ export const send = mutation({
         text: v.string(),
     },
     handler: async (ctx, args) => {
+        const timestamp = Date.now();
         const channel = await ctx.db.get(args.channelId);
         if (!channel) {
             throw new ConvexError("Channel not found");
@@ -53,15 +55,17 @@ export const send = mutation({
 
         const user = await getUser(ctx);
 
+        await updateChannelLastSeen(ctx, user._id, channel._id, timestamp);
+
         const id = await ctx.db.insert("messages", {
-            channelId: args.channelId,
+            channelId: channel._id,
             text: xss(Autolinker.link(args.text), {
                 whiteList: {
                     a: ["href", "title", "target"],
                 },
             }),
             userId: user._id,
-            timestamp: Date.now(),
+            timestamp,
         });
 
         return id;

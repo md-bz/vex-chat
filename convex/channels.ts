@@ -3,7 +3,11 @@ import { ConvexError, v } from "convex/values";
 import { getUser, isUserAdminOfChannel } from "./auth";
 import { nanoid } from "nanoid";
 import { Id } from "./_generated/dataModel";
-import { getSanitizedUser } from "./helper";
+import {
+    getChannelLastSeenInternal,
+    getSanitizedUser,
+    updateChannelLastSeen,
+} from "./helper";
 
 export async function getContactInfo(
     ctx: QueryCtx,
@@ -73,11 +77,13 @@ export async function getSharedChannels(
 export const getAll = query({
     handler: async (ctx) => {
         const user = await getUser(ctx);
+        console.log(`user ${user._id} has requested all channels`);
         const userChannels = await ctx.db
             .query("channelMembers")
             .withIndex("by_userId", (q) => q.eq("userId", user._id))
             .collect();
 
+        // todo: paginate this to only fetch 30ish channels each time
         return (
             await Promise.all(
                 userChannels.map(async (membership) => {
@@ -91,11 +97,20 @@ export const getAll = query({
                                 q.eq("channelId", membership.channelId)
                             )
                             .order("desc")
-                            .take(10)
+                            .take(20)
                     ).reverse();
 
+                    const channelSeen = await getChannelLastSeenInternal(
+                        ctx,
+                        user._id,
+                        membership.channelId
+                    );
                     if (channel.type !== "private")
-                        return { ...channel, messages };
+                        return {
+                            ...channel,
+                            messages,
+                            channelLastSeen: channelSeen?.lastSeenAt,
+                        };
 
                     const otherMember = await ctx.db
                         .query("channelMembers")
@@ -125,6 +140,7 @@ export const getAll = query({
                         ...channel,
                         user: sanitizedUser,
                         messages,
+                        channelLastSeen: channelSeen?.lastSeenAt,
                     };
                 })
             )
@@ -329,5 +345,30 @@ export const joinChannel = mutation({
         });
 
         return true;
+    },
+});
+
+export const seenChannel = mutation({
+    args: {
+        channelId: v.id("channels"),
+        lastSeenAt: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+        const user = await getUser(ctx);
+        await updateChannelLastSeen(
+            ctx,
+            user._id,
+            args.channelId,
+            args.lastSeenAt
+        );
+    },
+});
+
+export const getChannelLastSeen = mutation({
+    args: { channelId: v.id("channels") },
+    handler: async (ctx, args) => {
+        const user = await getUser(ctx);
+
+        return getChannelLastSeenInternal(ctx, user._id, args.channelId);
     },
 });

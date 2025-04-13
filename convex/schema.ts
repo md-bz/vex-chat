@@ -45,6 +45,12 @@ export default defineSchema({
         timestamp: v.number(),
     }).index("by_channel", ["channelId"]),
 
+    channelLastSeen: defineTable({
+        userId: v.id("users"),
+        channelId: v.id("channels"),
+        lastSeenAt: v.number(),
+    }).index("by_user_channel", ["userId", "channelId"]),
+
     contacts: defineTable({
         ownerId: v.id("users"),
         name: v.string(),
