@@ -23,7 +23,7 @@ export const ChatList = () => {
             (msg: any) => msg._creationTime > lastSeenTime
         );
 
-        return unreadMessages.length >= 20 ? "20+" : unreadMessages.length;
+        return unreadMessages.length;
     };
 
     const tabs = [
@@ -131,9 +131,11 @@ export const ChatList = () => {
                                                 {unreadCount > 0 && (
                                                     <Badge
                                                         variant="default"
-                                                        className="h-5 w-5 p-0 flex items-center justify-center"
+                                                        className="h-5 w-6 p-0 flex items-center justify-center"
                                                     >
-                                                        {unreadCount}
+                                                        {unreadCount === 20
+                                                            ? "20+"
+                                                            : unreadCount}
                                                     </Badge>
                                                 )}
                                             </div>
