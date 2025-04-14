@@ -86,7 +86,7 @@ export const ChatList = () => {
 
                             const myLastSeen =
                                 item.channelLastSeen.find(
-                                    (c) => c.userId === me?._id
+                                    (c) => c?.userId === me?._id
                                 )?.lastSeenAt || 0;
                             const unreadCount = getUnreadCount(
                                 item,
@@ -109,7 +109,6 @@ export const ChatList = () => {
                                             type: item.type,
                                             //@ts-ignore
                                             userId: item.user?._id || null,
-                                            lastSeen: item.channelLastSeen,
                                         })
                                     }
                                 >

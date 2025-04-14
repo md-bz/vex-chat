@@ -32,14 +32,23 @@ export async function updateChannelLastSeen(
     }
 }
 
-export function getChannelLastSeenInternal(
+export async function getChannelLastSeenInternal(
     ctx: MutationCtx | QueryCtx,
-    channelId: Id<"channels">
+    channelId: Id<"channels">,
+    userId: Id<"users">,
+    channelType: "channel" | "group" | "private"
 ) {
-    return ctx.db
+    const channelLastSeen = await ctx.db
         .query("channelLastSeen")
         .withIndex("by_channel_user", (q) => q.eq("channelId", channelId))
         .collect();
+
+    if (channelType === "channel") {
+        return channelLastSeen.map((m) =>
+            m.userId === userId ? m : { ...m, userId: "anonymous" }
+        );
+    }
+    return channelLastSeen;
 }
 
 export async function getContactInfo(

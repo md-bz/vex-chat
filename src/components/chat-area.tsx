@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatStore } from "@/lib/store";
 import { useChannels, useMessages } from "@/lib/hooks";
-import { SendIcon, Check, CheckCheck } from "lucide-react";
+import { SendIcon, Check, CheckCheck, EyeIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUsers } from "@/lib/hooks";
 import ChannelInfoPopup from "./ChannelInfoPopup";
@@ -135,12 +135,29 @@ export default function ChatArea() {
         _creationTime: number;
         userId: Id<"users">;
     }) => {
-        if (!lastSeenData || message.userId !== me?._id) return null;
+        if (!lastSeenData) return null;
+        if (channelInfo?.type === "channel")
+            return (
+                <>
+                    <span>
+                        {
+                            lastSeenData.filter(
+                                (lastSeen) =>
+                                    lastSeen.lastSeenAt >= message._creationTime
+                            ).length
+                        }
+                    </span>
+                    <EyeIcon className="h-4 w-4" />
+                </>
+            );
+
+        if (message.userId !== me?._id) return null;
 
         const seenByOther = lastSeenData.find(
             (seen) =>
-                seen.userId !== me?._id &&
-                seen.lastSeenAt >= message._creationTime
+                seen?.userId !== me?._id &&
+                seen?.lastSeenAt &&
+                seen?.lastSeenAt >= message._creationTime
         );
 
         return seenByOther ? (

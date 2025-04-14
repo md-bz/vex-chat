@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { getUser, isUserAdminOfChannel } from "./auth";
+import { getUser, isUserAdminOfChannel, isUserMemberOfChannel } from "./auth";
 import { nanoid } from "nanoid";
 import {
     getChannelLastSeenInternal,
@@ -37,7 +37,9 @@ export const getAll = query({
 
                     const channelLastSeen = await getChannelLastSeenInternal(
                         ctx,
-                        membership.channelId
+                        membership.channelId,
+                        user._id,
+                        channel.type
                     );
                     if (channel.type !== "private")
                         return {
@@ -302,6 +304,21 @@ export const getChannelLastSeen = query({
     args: { channelId: v.id("channels") },
     handler: async (ctx, args) => {
         const user = await getUser(ctx);
-        return getChannelLastSeenInternal(ctx, args.channelId);
+        const channel = await ctx.db.get(args.channelId);
+        if (!channel) {
+            throw new ConvexError("Channel not found");
+        }
+
+        const isMember = isUserMemberOfChannel(ctx, args.channelId);
+        if (!isMember) {
+            throw new ConvexError("You are not a member of this channel");
+        }
+
+        return getChannelLastSeenInternal(
+            ctx,
+            args.channelId,
+            user._id,
+            channel.type
+        );
     },
 });
