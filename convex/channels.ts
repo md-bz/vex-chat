@@ -363,11 +363,10 @@ export const seenChannel = mutation({
     },
 });
 
-export const getChannelLastSeen = mutation({
+export const getChannelLastSeen = query({
     args: { channelId: v.id("channels") },
     handler: async (ctx, args) => {
         const user = await getUser(ctx);
-
         return getChannelLastSeenInternal(ctx, args.channelId);
     },
 });

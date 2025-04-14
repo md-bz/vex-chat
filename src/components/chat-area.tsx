@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,6 +13,7 @@ import ChannelInfoPopup from "./ChannelInfoPopup";
 import { ChannelIcon } from "./ui/channel-icon";
 import UserInfoPopup from "./UserInfoPopup";
 import { User } from "@/lib/types";
+import { useDebouncedCallback } from "use-debounce";
 import UserProfile from "./UserProfile";
 import parse, { DOMNode, domToReact } from "html-react-parser";
 import { BackIcon } from "./ui/back-icon";
@@ -21,13 +22,19 @@ import { Id } from "../../convex/_generated/dataModel";
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
     const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+    const lastSeenMessageTimeRef = useRef<number>(0);
+
     const { selectChannel, currentChannel } = useChatStore();
     const { messages, sendMessage } = useMessages(currentChannel?._id || null);
-    const { getChannel, createChannel } = useChannels();
+    const { getChannel, createChannel, seenChannel, getChannelLastSeen } =
+        useChannels();
+
     const { getMe } = useUsers();
     const me = getMe();
     let channelInfo = getChannel(currentChannel?._id || undefined);
-    const lastSeenData = currentChannel?.lastSeen || [];
+
+    const lastSeenData = getChannelLastSeen(currentChannel?._id || undefined);
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -35,6 +42,52 @@ export default function ChatArea() {
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
         }
     }, [messages]);
+
+    const debouncedSeenChannel = useDebouncedCallback(
+        (channelId: Id<"channels">, lastSeenAt: number) => {
+            if (lastSeenAt > lastSeenMessageTimeRef.current) {
+                lastSeenMessageTimeRef.current = lastSeenAt;
+                seenChannel(lastSeenAt, channelId);
+            }
+        },
+        300
+    );
+    useEffect(() => {
+        if (!currentChannel?._id || !me?._id) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const messageId =
+                            entry.target.getAttribute("data-message-id");
+                        const message = messages.find(
+                            (m) => m._id === messageId
+                        );
+                        if (
+                            message &&
+                            message.userId !== me._id &&
+                            currentChannel?._id
+                        ) {
+                            debouncedSeenChannel(
+                                currentChannel._id,
+                                message._creationTime
+                            );
+                        }
+                    }
+                });
+            },
+            { root: scrollAreaRef.current, threshold: 0.5 }
+        );
+
+        const currentMap = messageRefs.current;
+        currentMap.forEach((node) => observer.observe(node));
+
+        return () => {
+            currentMap.forEach((node) => observer.unobserve(node));
+            debouncedSeenChannel.cancel(); // Cleanup debounce
+        };
+    }, [messages, currentChannel?._id]);
 
     if (!currentChannel) {
         return;
@@ -186,6 +239,17 @@ export default function ChatArea() {
                         messages.map((message) => (
                             <div
                                 key={message._id}
+                                ref={(node) => {
+                                    if (node) {
+                                        messageRefs.current.set(
+                                            message._id,
+                                            node
+                                        );
+                                    } else {
+                                        messageRefs.current.delete(message._id);
+                                    }
+                                }}
+                                data-message-id={message._id}
                                 className={`flex ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
                             >
                                 <div

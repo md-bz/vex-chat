@@ -39,6 +39,21 @@ export function useChannels() {
     const allChannels = useQuery(api.channels.getAll) || [];
     const createChannelMutation = useMutation(api.channels.create);
     const seenChannelMutation = useMutation(api.channels.seenChannel);
+    const getChannelLastSeen = (channelId?: Id<"channels">) =>
+        useQuery(
+            api.channels.getChannelLastSeen,
+            channelId ? { channelId } : "skip"
+        );
+
+    const seenChannel = async (
+        lastSeenAt: number,
+        channelId: Id<"channels">
+    ) => {
+        await seenChannelMutation({
+            lastSeenAt,
+            channelId,
+        });
+    };
 
     const getChannel = (id?: Id<"channels">) =>
         useQuery(api.channels.get, id ? { id } : "skip");
@@ -58,7 +73,8 @@ export function useChannels() {
         allChannels,
         createChannel,
         getChannel,
-        seenChannelMutation,
+        seenChannel,
+        getChannelLastSeen,
     };
 }
 
