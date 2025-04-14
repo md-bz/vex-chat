@@ -77,7 +77,6 @@ export async function getSharedChannels(
 export const getAll = query({
     handler: async (ctx) => {
         const user = await getUser(ctx);
-        console.log(`user ${user._id} has requested all channels`);
         const userChannels = await ctx.db
             .query("channelMembers")
             .withIndex("by_userId", (q) => q.eq("userId", user._id))
