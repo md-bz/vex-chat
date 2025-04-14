@@ -30,6 +30,7 @@ export async function getMembership(
     return ctx.db
         .query("channelMembers")
         .withIndex("by_userId", (q) => q.eq("userId", user._id))
+        .filter((q) => q.eq(q.field("channelId"), channelId))
         .first();
 }
 
