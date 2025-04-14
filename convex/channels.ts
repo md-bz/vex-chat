@@ -1,78 +1,14 @@
-import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { getUser, isUserAdminOfChannel } from "./auth";
 import { nanoid } from "nanoid";
-import { Id } from "./_generated/dataModel";
 import {
     getChannelLastSeenInternal,
+    getContactInfo,
     getSanitizedUser,
+    getSharedChannels,
     updateChannelLastSeen,
 } from "./helper";
-
-export async function getContactInfo(
-    ctx: QueryCtx,
-    userId: Id<"users">,
-    ownerId: Id<"users">
-) {
-    return await ctx.db
-        .query("contacts")
-        .withIndex("by_ownerId_contactId", (q) =>
-            q.eq("ownerId", ownerId).eq("contactId", userId)
-        )
-        .first();
-}
-
-export async function getSharedChannels(
-    ctx: QueryCtx | MutationCtx,
-    user1: Id<"users">,
-    user2: Id<"users">
-) {
-    const user1Membership = await ctx.db
-        .query("channelMembers")
-        .withIndex("by_userId", (q) => q.eq("userId", user1))
-        .collect();
-
-    if (!user1Membership) {
-        return {
-            sharedPrivate: null,
-            sharedChannels: [],
-        };
-    }
-
-    const user2Membership = await ctx.db
-        .query("channelMembers")
-        .withIndex("by_userId", (q) => q.eq("userId", user2))
-        .collect();
-    if (!user2Membership) {
-        return {
-            sharedPrivate: null,
-            sharedChannels: [],
-        };
-    }
-
-    const user1ChannelIds = new Set(
-        user1Membership.map((membership) => membership.channelId)
-    );
-    const sharedChannelIds = user2Membership
-        .map((membership) => membership.channelId)
-        .filter((channelId) => user1ChannelIds.has(channelId));
-
-    const channels = await Promise.all(
-        sharedChannelIds.map((channelId) => ctx.db.get(channelId))
-    );
-
-    if (!channels || channels.length === 0) {
-        return {
-            sharedPrivate: null,
-            sharedChannels: [],
-        };
-    }
-
-    return {
-        sharedPrivate: channels.find((c) => c?.type === "private"),
-        sharedChannels: channels.filter((c) => c?.type !== "private"),
-    };
-}
 
 export const getAll = query({
     handler: async (ctx) => {
