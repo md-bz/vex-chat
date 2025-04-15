@@ -189,6 +189,7 @@ export default function ChatArea() {
                     type={channelInfo.type}
                     createdAt={channelInfo.createdAt}
                     members={channelInfo.members as User[]}
+                    isAdmin={channelInfo.isAdmin}
                     inviteLink={channelInfo.link}
                 >
                     <div className="flex items-center space-x-2">

@@ -1,9 +1,7 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -25,15 +23,19 @@ import { Badge } from "@/components/ui/badge";
 import { ChannelIcon } from "./ui/channel-icon";
 import { User } from "@/lib/types";
 import { UserCard } from "./UserCard";
+import { useChannels } from "@/lib/hooks";
+import { useAuth } from "@clerk/nextjs";
+import { Id } from "../../convex/_generated/dataModel";
 
 interface ChannelInfoPopupProps {
-    id: string;
+    id: Id<"channels">;
     name: string;
     type: "channel" | "group" | "private";
     createdAt: string | number;
     members: User[] | undefined;
     inviteLink?: string;
     children: React.ReactNode;
+    isAdmin?: boolean;
 }
 
 export default function ChannelInfoPopup({
@@ -44,15 +46,33 @@ export default function ChannelInfoPopup({
     members = [],
     inviteLink,
     children,
+    isAdmin = false,
 }: ChannelInfoPopupProps) {
     const [copied, setCopied] = useState(false);
     const [open, setOpen] = useState(false);
+    const [generatingLink, setGeneratingLink] = useState(false);
+    const [currentInviteLink, setCurrentInviteLink] = useState(inviteLink);
+    const { createChannelLink } = useChannels();
+    const { userId } = useAuth();
 
     const copyInviteLink = () => {
-        if (!inviteLink) return;
-        navigator.clipboard.writeText(inviteLink);
+        if (!currentInviteLink) return;
+        navigator.clipboard.writeText(currentInviteLink);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const generateInviteLink = async () => {
+        if (!userId) return;
+        setGeneratingLink(true);
+        try {
+            const newLink = await createChannelLink(id);
+            setCurrentInviteLink(newLink);
+        } catch (error) {
+            console.error("Failed to create invite link:", error);
+        } finally {
+            setGeneratingLink(false);
+        }
     };
 
     const getChannelTypeLabel = () => {
@@ -74,6 +94,7 @@ export default function ChannelInfoPopup({
         return <>{date.toString()}</>;
     };
 
+    const showInviteSection = type !== "private" && isAdmin;
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -95,43 +116,62 @@ export default function ChannelInfoPopup({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 h">
-                    {type !== "private" && inviteLink && (
+                <div className="space-y-4">
+                    {showInviteSection && (
                         <div className="space-y-2">
                             <h3 className="text-sm font-medium">Invite Link</h3>
-                            <div className="flex items-center space-x-2">
-                                <div className="bg-muted p-2 rounded-md text-xs flex-1 truncate">
-                                    {inviteLink}
+                            {currentInviteLink ? (
+                                <div className="flex items-center space-x-2">
+                                    <div className="bg-muted p-2 rounded-md text-xs flex-1 truncate">
+                                        {currentInviteLink}
+                                    </div>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    size="icon"
+                                                    variant="outline"
+                                                    onClick={copyInviteLink}
+                                                >
+                                                    {copied ? (
+                                                        <Check className="h-4 w-4" />
+                                                    ) : (
+                                                        <Copy className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>
+                                                    {copied
+                                                        ? "Copied!"
+                                                        : "Copy invite link"}
+                                                </p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                size="icon"
-                                                variant="outline"
-                                                onClick={copyInviteLink}
-                                            >
-                                                {copied ? (
-                                                    <Check className="h-4 w-4" />
-                                                ) : (
-                                                    <Copy className="h-4 w-4" />
-                                                )}
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>
-                                                {copied
-                                                    ? "Copied!"
-                                                    : "Copy invite link"}
-                                            </p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </div>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={generateInviteLink}
+                                    disabled={generatingLink}
+                                    className="w-full"
+                                >
+                                    {generatingLink ? (
+                                        "Generating..."
+                                    ) : (
+                                        <>
+                                            <LinkIcon className="h-4 w-4 mr-2" />
+                                            Create Invite Link
+                                        </>
+                                    )}
+                                </Button>
+                            )}
                         </div>
                     )}
 
-                    <div className=" space-y-2">
+                    <div className="space-y-2">
                         <h3 className="text-sm font-medium">
                             Members ({members?.filter(Boolean).length || 0})
                         </h3>

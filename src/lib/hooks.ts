@@ -39,6 +39,9 @@ export function useChannels() {
     const allChannels = useQuery(api.channels.getAll) || [];
     const createChannelMutation = useMutation(api.channels.create);
     const seenChannelMutation = useMutation(api.channels.seenChannel);
+    const createChannelLinkMutation = useMutation(api.channels.createLink);
+    const joinChannelMutation = useMutation(api.channels.joinChannel);
+
     const getChannelLastSeen = (channelId?: Id<"channels">) =>
         useQuery(
             api.channels.getChannelLastSeen,
@@ -69,12 +72,26 @@ export function useChannels() {
         });
     };
 
+    const createChannelLink = async (channelId: Id<"channels">) => {
+        return await createChannelLinkMutation({
+            channelId,
+        });
+    };
+
+    const joinChannel = async (link: string) => {
+        return await joinChannelMutation({
+            link,
+        });
+    };
+
     return {
         allChannels,
         createChannel,
         getChannel,
         seenChannel,
         getChannelLastSeen,
+        joinChannel,
+        createChannelLink,
     };
 }
 

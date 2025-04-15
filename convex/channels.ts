@@ -114,7 +114,9 @@ export const get = query({
             throw new ConvexError("Not a member of this channel");
         }
 
-        const hasPermission = thisMember.isAdmin || channel.type !== "channel";
+        const isAdmin = thisMember.isAdmin;
+
+        const hasPermission = isAdmin || channel.type !== "channel";
 
         const members = hasPermission
             ? await Promise.all(
@@ -142,7 +144,7 @@ export const get = query({
               )
             : undefined;
         const channelLink =
-            channel.type !== "private" && thisMember.isAdmin
+            channel.type !== "private" && isAdmin
                 ? await ctx.db
                       .query("channelLinks")
                       .withIndex("by_channelId", (q) =>
@@ -156,6 +158,7 @@ export const get = query({
             link: channelLink?.link,
             canSendMessage: hasPermission,
             members: members,
+            isAdmin,
         };
     },
 });
