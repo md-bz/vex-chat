@@ -141,8 +141,19 @@ export const get = query({
                   )
               )
             : undefined;
+        const channelLink =
+            channel.type !== "private" && thisMember.isAdmin
+                ? await ctx.db
+                      .query("channelLinks")
+                      .withIndex("by_channelId", (q) =>
+                          q.eq("channelId", args.id)
+                      )
+                      .first()
+                : undefined;
+
         return {
             ...channel,
+            link: channelLink?.link,
             canSendMessage: hasPermission,
             members: members,
         };
@@ -248,9 +259,11 @@ export const joinChannel = mutation({
         link: v.string(),
     },
     handler: async (ctx, args) => {
+        const user = await getUser(ctx);
+
         const channelLink = await ctx.db
             .query("channelLinks")
-            .filter((q) => q.eq(q.field("link"), args.link))
+            .withIndex("by_link", (q) => q.eq("link", args.link))
             .first();
 
         if (!channelLink) {
@@ -271,8 +284,6 @@ export const joinChannel = mutation({
                 "Links can only be created in channels and groups"
             );
         }
-
-        const user = await getUser(ctx);
 
         await ctx.db.insert("channelMembers", {
             channelId: channelLink.channelId,

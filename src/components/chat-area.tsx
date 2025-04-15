@@ -189,7 +189,7 @@ export default function ChatArea() {
                     type={channelInfo.type}
                     createdAt={channelInfo.createdAt}
                     members={channelInfo.members as User[]}
-                    inviteLink={"example"}
+                    inviteLink={channelInfo.link}
                 >
                     <div className="flex items-center space-x-2">
                         <ChannelIcon type={channelInfo.type} />

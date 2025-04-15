@@ -36,7 +36,9 @@ export default defineSchema({
         link: v.string(),
         createdBy: v.id("users"),
         createdAt: v.number(),
-    }).index("by_link_channelId", ["link", "channelId"]),
+    })
+        .index("by_channelId", ["channelId"])
+        .index("by_link", ["link"]),
 
     messages: defineTable({
         channelId: v.id("channels"),

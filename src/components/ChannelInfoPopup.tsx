@@ -32,7 +32,7 @@ interface ChannelInfoPopupProps {
     type: "channel" | "group" | "private";
     createdAt: string | number;
     members: User[] | undefined;
-    inviteLink: string;
+    inviteLink?: string;
     children: React.ReactNode;
 }
 
@@ -49,6 +49,7 @@ export default function ChannelInfoPopup({
     const [open, setOpen] = useState(false);
 
     const copyInviteLink = () => {
+        if (!inviteLink) return;
         navigator.clipboard.writeText(inviteLink);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -95,7 +96,7 @@ export default function ChannelInfoPopup({
                 </DialogHeader>
 
                 <div className="space-y-4 h">
-                    {type !== "private" && (
+                    {type !== "private" && inviteLink && (
                         <div className="space-y-2">
                             <h3 className="text-sm font-medium">Invite Link</h3>
                             <div className="flex items-center space-x-2">
