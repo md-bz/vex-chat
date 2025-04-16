@@ -18,6 +18,7 @@ import UserProfile from "./UserProfile";
 import parse, { DOMNode, domToReact } from "html-react-parser";
 import { BackIcon } from "./ui/back-icon";
 import { Id } from "../../convex/_generated/dataModel";
+import JoinChannel from "./JoinChannel";
 
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
@@ -167,6 +168,30 @@ export default function ChatArea() {
         );
     };
 
+    const options = {
+        replace: (domNode: DOMNode) => {
+            if (domNode.type === "tag" && domNode.name === "a") {
+                const domain = window.location.host;
+                const href = domNode.attribs.href;
+                const joinLinkMatch = href.match(`/${domain}\/join\/([^\/]+)`);
+                if (joinLinkMatch) {
+                    const inviteLink = joinLinkMatch[1];
+                    return <JoinChannel inviteLink={inviteLink} text={href} />;
+                }
+                return (
+                    <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 underline"
+                    >
+                        {domToReact(domNode.children as DOMNode[])}
+                    </a>
+                );
+            }
+        },
+    };
+
     if (!currentChannel) {
         return (
             <div className="flex-1 flex items-center justify-center not-md:hidden">
@@ -212,23 +237,6 @@ export default function ChatArea() {
             </UserInfoPopup>
         );
     }
-
-    const options = {
-        replace: (domNode: DOMNode) => {
-            if (domNode.type === "tag" && domNode.name === "a") {
-                return (
-                    <a
-                        href={domNode.attribs.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 underline"
-                    >
-                        {domToReact(domNode.children as DOMNode[])}
-                    </a>
-                );
-            }
-        },
-    };
 
     return (
         <div className="flex-1 flex flex-col h-full overflow-scroll bg-background">

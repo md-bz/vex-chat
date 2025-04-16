@@ -297,7 +297,7 @@ export const joinChannel = mutation({
             isAdmin: false,
         });
 
-        return true;
+        return channel;
     },
 });
 

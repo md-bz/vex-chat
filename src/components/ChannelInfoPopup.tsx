@@ -51,7 +51,11 @@ export default function ChannelInfoPopup({
     const [copied, setCopied] = useState(false);
     const [open, setOpen] = useState(false);
     const [generatingLink, setGeneratingLink] = useState(false);
-    const [currentInviteLink, setCurrentInviteLink] = useState(inviteLink);
+    const domain = window.location.host;
+
+    const [currentInviteLink, setCurrentInviteLink] = useState(
+        `https://${domain}/join/${inviteLink}`
+    );
     const { createChannelLink } = useChannels();
     const { userId } = useAuth();
 
