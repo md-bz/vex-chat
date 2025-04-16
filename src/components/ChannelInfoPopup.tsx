@@ -106,7 +106,7 @@ export default function ChannelInfoPopup({
                     {children}
                 </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <ChannelIcon type={type} />
