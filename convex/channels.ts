@@ -288,6 +288,9 @@ export const joinChannel = mutation({
             );
         }
 
+        const isMember = await isUserMemberOfChannel(ctx, channel._id);
+        if (isMember) throw new ConvexError("Already a member");
+
         await ctx.db.insert("channelMembers", {
             channelId: channelLink.channelId,
             userId: user._id,
