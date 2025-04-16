@@ -135,7 +135,7 @@ export default function UserInfoPopup({ user, children }: UserInfoProps) {
                     </DialogHeader>
                     <div className="w-full border-0 shadow-none">
                         <div className="flex flex-col space-y-2 pt-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 py-5">
                                 <Badge
                                     variant="outline"
                                     className="px-2 py-1 text-xs"
