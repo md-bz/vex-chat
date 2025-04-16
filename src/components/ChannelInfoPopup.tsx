@@ -124,7 +124,7 @@ export default function ChannelInfoPopup({
                     {showInviteSection && (
                         <div className="space-y-2">
                             <h3 className="text-sm font-medium">Invite Link</h3>
-                            {currentInviteLink ? (
+                            {inviteLink ? (
                                 <div className="flex items-center space-x-2">
                                     <div className="bg-muted p-2 rounded-md text-xs flex-1 truncate">
                                         {currentInviteLink}

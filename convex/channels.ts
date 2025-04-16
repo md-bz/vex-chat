@@ -201,9 +201,27 @@ export const create = mutation({
             createdAt: Date.now(),
         });
 
+        const link = nanoid();
+        await ctx.db.insert("channelLinks", {
+            channelId: id,
+            link,
+            createdAt: Date.now(),
+            createdBy: user._id,
+        });
+
         const members = args.members ? [user._id, ...args.members] : [user._id];
 
         for (const member of members) {
+            if (member !== user._id) {
+                const hasAsContact = await ctx.db
+                    .query("contacts")
+                    .withIndex("by_ownerId_contactId", (q) =>
+                        q.eq("ownerId", member).eq("contactId", user._id)
+                    )
+                    .first();
+                if (!hasAsContact) continue;
+            }
+
             await ctx.db.insert("channelMembers", {
                 channelId: id,
                 userId: member,
