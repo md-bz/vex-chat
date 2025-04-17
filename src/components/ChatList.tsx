@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "./ui/scroll-area";
 
 export const ChatList = () => {
     const { currentChannel, selectChannel } = useChatStore();
@@ -77,7 +78,7 @@ export const ChatList = () => {
 
             {tabs.map((tab) => (
                 <TabsContent key={tab.id} value={tab.id}>
-                    <div className="space-y-1">
+                    <ScrollArea className="h-[70vh] space-y-1 overflow-y-scroll">
                         {tab.items?.map((item) => {
                             if (!item) return null;
                             const lastMessage = getLastMessagePreview(
@@ -148,7 +149,7 @@ export const ChatList = () => {
                                 </Button>
                             );
                         })}
-                    </div>
+                    </ScrollArea>
                 </TabsContent>
             ))}
         </Tabs>
