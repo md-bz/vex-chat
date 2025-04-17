@@ -212,7 +212,7 @@ export const create = mutation({
         const members = args.members ? [user._id, ...args.members] : [user._id];
 
         for (const member of members) {
-            if (member !== user._id) {
+            if (type !== "private" && member !== user._id) {
                 const hasAsContact = await ctx.db
                     .query("contacts")
                     .withIndex("by_ownerId_contactId", (q) =>
