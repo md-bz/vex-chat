@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "./ui/scroll-area";
 import { useChatStore } from "@/lib/store";
+import { formatTime } from "@/lib/utils";
 import { useChannels, useMessages } from "@/lib/hooks";
 import { SendIcon, Check, CheckCheck, EyeIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -239,7 +240,7 @@ export default function ChatArea() {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full overflow-scroll bg-background">
+        <div className="flex-1 flex flex-col h-full bg-background">
             <div className="px-3 py-4 border-b bg-card h-[70px] flex align-center">
                 <div className="flex items-center">
                     <button
@@ -253,95 +254,130 @@ export default function ChatArea() {
             </div>
 
             <ScrollArea
-                className="flex-1 p-4 overflow-y-scroll"
+                className="flex-1 p-4 overflow-y-scroll h-20"
                 ref={scrollAreaRef}
             >
-                <div className="space-y-4">
-                    {messages.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            No messages yet. Be the first to send a message!
-                        </div>
-                    ) : (
-                        messages.map((message) => (
-                            <div
-                                key={message._id}
-                                ref={(node) => {
-                                    if (node) {
-                                        messageRefs.current.set(
-                                            message._id,
-                                            node
-                                        );
-                                    } else {
-                                        messageRefs.current.delete(message._id);
-                                    }
-                                }}
-                                data-message-id={message._id}
-                                className={`flex ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
-                            >
-                                <div
-                                    className={`flex max-w-[70%] ${message.userId === me?._id ? "flex-row-reverse" : "flex-row"}`}
-                                >
-                                    {channelInfo?.type !== "private" &&
-                                        message.userId !== me?._id && (
-                                            <UserInfoPopup
-                                                user={message.user as User}
-                                            >
-                                                <Avatar
-                                                    className={
+                {messages.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                        No messages yet. Be the first to send a message!
+                    </div>
+                ) : (
+                    messages.map((message, index) => {
+                        // Check if we need to show a date separator
+                        const showDateSeparator =
+                            index === 0 ||
+                            formatTime(messages[index - 1].timestamp, true) !==
+                                formatTime(message.timestamp, true);
+
+                        return (
+                            <React.Fragment key={message._id}>
+                                {showDateSeparator && (
+                                    <div className="sticky top-0.25 flex justify-center my-6">
+                                        <div className="bg-muted text-muted-foreground text-xs px-3 py-1 rounded-full">
+                                            {formatTime(
+                                                message.timestamp,
+                                                true
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                                <div>
+                                    <div
+                                        ref={(node) => {
+                                            if (node) {
+                                                messageRefs.current.set(
+                                                    message._id,
+                                                    node
+                                                );
+                                            } else {
+                                                messageRefs.current.delete(
+                                                    message._id
+                                                );
+                                            }
+                                        }}
+                                        data-message-id={message._id}
+                                        className={`flex ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
+                                    >
+                                        <div
+                                            className={`flex max-w-[70%] ${message.userId === me?._id ? "flex-row-reverse" : "flex-row"}`}
+                                        >
+                                            {channelInfo?.type !== "private" &&
+                                                message.userId !== me?._id && (
+                                                    <UserInfoPopup
+                                                        user={
+                                                            message.user as User
+                                                        }
+                                                    >
+                                                        <Avatar
+                                                            className={
+                                                                message.userId ===
+                                                                me?._id
+                                                                    ? "ml-2"
+                                                                    : "mr-2"
+                                                            }
+                                                        >
+                                                            <AvatarFallback>
+                                                                {message.userId
+                                                                    .substring(
+                                                                        0,
+                                                                        2
+                                                                    )
+                                                                    .toUpperCase()}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                    </UserInfoPopup>
+                                                )}
+
+                                            <div>
+                                                {channelInfo?.type !==
+                                                    "private" &&
+                                                    message.userId !==
+                                                        me?._id && (
+                                                        <div className="flex items-baseline gap-2 text-start justify-start">
+                                                            <p
+                                                                className={`text-sm font-medium`}
+                                                            >
+                                                                {
+                                                                    message.user
+                                                                        ?.name
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                <div
+                                                    className={`mt-1 rounded-lg px-4 py-2 ${
                                                         message.userId ===
                                                         me?._id
-                                                            ? "ml-2"
-                                                            : "mr-2"
-                                                    }
+                                                            ? "bg-primary text-primary-foreground"
+                                                            : "bg-muted"
+                                                    }`}
                                                 >
-                                                    <AvatarFallback>
-                                                        {message.userId
-                                                            .substring(0, 2)
-                                                            .toUpperCase()}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                            </UserInfoPopup>
-                                        )}
-
-                                    <div>
-                                        {channelInfo?.type !== "private" &&
-                                            message.userId !== me?._id && (
-                                                <div className="flex items-baseline gap-2 text-start justify-start">
-                                                    <p
-                                                        className={`text-sm font-medium`}
-                                                    >
-                                                        {message.user?.name}
+                                                    <p className="text-sm">
+                                                        {parse(
+                                                            message.text,
+                                                            options
+                                                        )}
                                                     </p>
                                                 </div>
-                                            )}
-                                        <div
-                                            className={`mt-1 rounded-lg px-4 py-2 ${
-                                                message.userId === me?._id
-                                                    ? "bg-primary text-primary-foreground"
-                                                    : "bg-muted"
-                                            }`}
-                                        >
-                                            <p className="text-sm">
-                                                {parse(message.text, options)}
-                                            </p>
-                                        </div>
-                                        <div
-                                            className={`text-xs text-muted-foreground flex items-center gap-1 ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
-                                        >
-                                            {getMessageStatus(message)}
-                                            {new Date(
-                                                message.timestamp
-                                            ).toLocaleTimeString([], {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                            })}
+                                                <div
+                                                    className={`text-xs text-muted-foreground flex items-center gap-1 ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
+                                                >
+                                                    {getMessageStatus(message)}
+                                                    {new Date(
+                                                        message.timestamp
+                                                    ).toLocaleTimeString([], {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
-                    )}
-                </div>
+                            </React.Fragment>
+                        );
+                    })
+                )}
             </ScrollArea>
 
             {channelInfo?.canSendMessage && (

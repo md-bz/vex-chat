@@ -5,13 +5,14 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function formatTime(timestamp: number) {
+export function formatTime(timestamp: number, noTime: boolean = false) {
     const now = new Date();
     const date = new Date(timestamp);
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (diffInHours < 24) {
         // Today - show time only
+        if (noTime) return "Today";
         return date.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
