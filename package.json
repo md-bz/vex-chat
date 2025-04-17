@@ -6,7 +6,7 @@
         "dev": "next dev --turbopack",
         "convex:dev": "convex dev",
         "convex:deploy": "convex deploy",
-        "build": "next build && convex deploy",
+        "build": "next build",
         "start": "next start",
         "lint": "next lint"
     },
