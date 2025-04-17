@@ -16,7 +16,7 @@ export default function ChatLayout({
                 <div
                     className={`h-full p-4 w-64 bg-primary-foreground flex flex-col not-md:w-full ${currentChannel ? "not-md:hidden" : ""}`}
                 >
-                    <h1 className="text-xl font-bold pb-5">ConvexChat</h1>
+                    <h1 className="text-xl font-bold pb-5">VexChat</h1>
                     {children}
                 </div>
                 <ChatArea />

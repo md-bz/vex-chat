@@ -1,4 +1,4 @@
-# ConvexChat Application
+# VexChat Application
 
 This is a real-time chat application built with Next.js and Convex. It features real-time messaging with support for channels, private chats, and group conversations.
 
@@ -39,4 +39,3 @@ The application is structured as follows:
 For simplicity, the application uses localStorage to remember the user's selected username. In a production application, you would want to implement proper authentication.
 
 The chat functionality is implemented using Convex's real-time capabilities, with messages being synchronized across all connected clients.
-

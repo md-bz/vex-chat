@@ -9,7 +9,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "ConvexChat",
+    title: "VexChat",
     description: "Real-time chat application built with Convex and Next.js",
 };
 

@@ -13,7 +13,7 @@ export default function Home() {
         <main className="flex min-h-screen flex-col items-center justify-center p-4">
             <Card className="w-full max-w-md">
                 <CardHeader>
-                    <CardTitle>Welcome to ConvexChat</CardTitle>
+                    <CardTitle>Welcome to VexChat</CardTitle>
                     <CardDescription>
                         Sign in to start chatting.
                     </CardDescription>
