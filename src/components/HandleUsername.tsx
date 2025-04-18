@@ -1,26 +1,35 @@
 "use client";
 import { useUsers } from "@/lib/hooks";
 import { redirect, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Alert, AlertDescription } from "./ui/alert";
 import { ConvexError } from "convex/values";
+import { Authenticated } from "convex/react";
 
 export default function HandleUsername() {
+    return (
+        <Authenticated>
+            <HandleUsernameMain />
+        </Authenticated>
+    );
+}
+
+function HandleUsernameMain() {
     const { createUser, getMe } = useUsers();
     const router = useRouter();
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const me = getMe();
 
-    try {
-        const me = getMe();
+    useEffect(() => {
         if (me?._id) {
-            router.push("/chat");
+            router.replace("/chat");
         }
-    } catch (e) {}
+    }, [me]);
 
     const handleJoin = async () => {
         if (!name.trim()) {
