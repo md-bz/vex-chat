@@ -78,7 +78,7 @@ export const ChatList = () => {
 
             {tabs.map((tab) => (
                 <TabsContent key={tab.id} value={tab.id}>
-                    <ScrollArea className="h-[70vh] space-y-1 overflow-y-scroll">
+                    <ScrollArea className="h-[calc(100vh-200px)] space-y-1 overflow-y-scroll ">
                         {tab.items?.map((item) => {
                             if (!item) return null;
                             const lastMessage = getLastMessagePreview(
