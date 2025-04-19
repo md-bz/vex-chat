@@ -7,6 +7,13 @@ import { Button } from "./ui/button";
 import { Alert, AlertDescription } from "./ui/alert";
 import { ConvexError } from "convex/values";
 import { Authenticated } from "convex/react";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardTitle,
+} from "./ui/card";
 
 export default function HandleUsername() {
     return (
@@ -43,7 +50,7 @@ function HandleUsernameMain() {
         try {
             const user = await createUser(name, username.trim());
             if (user) {
-                return redirect("/chat");
+                router.replace("/chat");
             }
         } catch (error: any) {
             const errorMessage =
@@ -63,41 +70,47 @@ function HandleUsernameMain() {
     };
 
     return (
-        <div className="space-y-4 w-full max-w-sm">
-            <div>
-                <Input
-                    placeholder="Enter name"
-                    value={name}
-                    onChange={(e) => {
-                        setName(e.target.value);
-                        setError("");
-                    }}
-                    onKeyDown={handleKeyDown}
-                    className="mb-2"
-                />
-                <Input
-                    placeholder="Enter username"
-                    value={username}
-                    onChange={(e) => {
-                        setUsername(e.target.value);
-                        setError("");
-                    }}
-                    onKeyDown={handleKeyDown}
-                    className="mb-2"
-                />
-                {error && (
-                    <Alert variant="destructive" className="mt-2">
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                )}
-            </div>
-            <Button
-                onClick={handleJoin}
-                className="w-full"
-                // disabled={!name.trim() || isLoading}
-            >
-                {isLoading ? "Joining..." : "Join Chat"}
-            </Button>
-        </div>
+        <Card className="w-full max-w-md p-5">
+            <CardTitle>Welcome to Vex Chat</CardTitle>
+            <CardDescription>Enter name and username</CardDescription>
+            <CardContent>
+                <div>
+                    <Input
+                        placeholder="Enter name"
+                        value={name}
+                        onChange={(e) => {
+                            setName(e.target.value);
+                            setError("");
+                        }}
+                        onKeyDown={handleKeyDown}
+                        className="mb-2"
+                    />
+                    <Input
+                        placeholder="Enter username"
+                        value={username}
+                        onChange={(e) => {
+                            setUsername(e.target.value);
+                            setError("");
+                        }}
+                        onKeyDown={handleKeyDown}
+                        className="mb-2"
+                    />
+                    {error && (
+                        <Alert variant="destructive" className="mt-2">
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button
+                    onClick={handleJoin}
+                    className="w-full"
+                    // disabled={!name.trim() || isLoading}
+                >
+                    {isLoading ? "Joining..." : "Join Chat"}
+                </Button>
+            </CardFooter>
+        </Card>
     );
 }
