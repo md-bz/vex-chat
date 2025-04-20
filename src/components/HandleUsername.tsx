@@ -1,6 +1,6 @@
 "use client";
 import { useUsers } from "@/lib/hooks";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -30,7 +30,7 @@ function HandleUsernameMain() {
     const [username, setUsername] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const me = getMe();
+    const me = getMe(false);
 
     useEffect(() => {
         if (me?._id) {

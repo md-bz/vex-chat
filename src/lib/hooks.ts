@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import { redirect } from "next/navigation";
 
 export function useMessages(channelId: string | null) {
     // Convert string ID to Convex ID if it exists
@@ -98,7 +99,15 @@ export function useChannels() {
 export function useUsers() {
     const createUserMutation = useMutation(api.users.create);
     const updateLastSeenMutation = useMutation(api.users.updateLastSeen);
-    const getMe = () => useQuery(api.users.getMe);
+    const getMe = (redirectOnError = true) => {
+        try {
+            return useQuery(api.users.getMe);
+        } catch (error) {
+            if (redirectOnError) {
+                redirect("/");
+            }
+        }
+    };
     const searchUsers = (query: string) =>
         useQuery(api.users.search, { query });
 
