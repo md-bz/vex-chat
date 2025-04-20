@@ -8,11 +8,10 @@ export function useMessages(channelId: string | null) {
     const convexChannelId = channelId ? (channelId as Id<"channels">) : null;
 
     // Query messages from Convex
-    const messages =
-        useQuery(
-            api.messages.list,
-            convexChannelId ? { channelId: convexChannelId } : "skip"
-        ) || [];
+    const messages = useQuery(
+        api.messages.list,
+        convexChannelId ? { channelId: convexChannelId } : "skip"
+    );
 
     // Get the send message mutation
     const sendMessageMutation = useMutation(api.messages.send);
@@ -37,7 +36,7 @@ export function useMessages(channelId: string | null) {
 }
 
 export function useChannels() {
-    const allChannels = useQuery(api.channels.getAll) || [];
+    const allChannels = useQuery(api.channels.getAll);
     const createChannelMutation = useMutation(api.channels.create);
     const seenChannelMutation = useMutation(api.channels.seenChannel);
     const createChannelLinkMutation = useMutation(api.channels.createLink);

@@ -7,6 +7,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { useChatStore } from "@/lib/store";
 import { formatTime } from "@/lib/utils";
 import { useChannels, useMessages } from "@/lib/hooks";
+import { Skeleton } from "./ui/skeleton";
 import { SendIcon, Check, CheckCheck, EyeIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useUsers } from "@/lib/hooks";
@@ -55,7 +56,13 @@ export default function ChatArea() {
         300
     );
     useEffect(() => {
-        if (!currentChannel?._id || !me?._id) return;
+        if (
+            !currentChannel?._id ||
+            !me?._id ||
+            !messages ||
+            messages.length === 0
+        )
+            return;
 
         const observer = new IntersectionObserver(
             (entries) => {
@@ -90,7 +97,6 @@ export default function ChatArea() {
             debouncedSeenChannel.cancel(); // Cleanup debounce
         };
     }, [messages, currentChannel?._id]);
-
     if (!currentChannel) {
         return;
     }
@@ -257,9 +263,35 @@ export default function ChatArea() {
                 className="flex-1 p-4 overflow-y-scroll h-20"
                 ref={scrollAreaRef}
             >
-                {messages.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                        No messages yet. Be the first to send a message!
+                {messages === undefined ? (
+                    <div className="flex flex-col gap-4">
+                        {[...Array(6)].map((_, i) => {
+                            const isOdd = i % 2 === 0;
+                            return (
+                                <div
+                                    className="flex justify-between gap-1"
+                                    key={i}
+                                >
+                                    {!isOdd && (
+                                        <Skeleton className="h-8 w-8 rounded-2xl" />
+                                    )}
+                                    <div
+                                        className={`flex flex-1 gap-3 ${isOdd ? "justify-end" : "justify-start"} `}
+                                    >
+                                        <div className="flex flex-col gap-2 w-3/7">
+                                            <Skeleton className="h-8" />
+                                            <Skeleton
+                                                className={`h-2 w-1/2 ${isOdd ? "self-end" : ""}`}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : messages.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                        <span>No messages yet</span>
                     </div>
                 ) : (
                     messages.map((message, index) => {
