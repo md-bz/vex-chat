@@ -28,6 +28,9 @@ export default function ChatArea() {
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
     const lastSeenMessageTimeRef = useRef<number>(0);
+    const prevMessagesStatusRef = useRef<
+        "LoadingFirstPage" | "CanLoadMore" | "LoadingMore" | "Exhausted" | null
+    >(null);
 
     const { selectChannel, currentChannel } = useChatStore();
     const { loadMoreMessages, messagesStatus, messages, sendMessage } =
@@ -63,6 +66,31 @@ export default function ChatArea() {
         },
         [loadMoreMessages, messagesStatus]
     );
+
+    // Scroll to bottom when initial messages are loaded or new message is received
+    useEffect(() => {
+        // Case 1: Initial load completed - scroll to bottom
+        if (
+            prevMessagesStatusRef.current === "LoadingFirstPage" &&
+            messagesStatus !== "LoadingFirstPage" &&
+            scrollAreaRef.current
+        ) {
+            scrollAreaRef.current.scrollTop =
+                scrollAreaRef.current.scrollHeight;
+        }
+
+        // Case 2: New message received (not during LoadingMore) - scroll to bottom
+        if (
+            prevMessagesStatusRef.current !== "LoadingMore" &&
+            messagesStatus !== "LoadingMore" &&
+            scrollAreaRef.current
+        ) {
+            scrollAreaRef.current.scrollTop =
+                scrollAreaRef.current.scrollHeight;
+        }
+
+        prevMessagesStatusRef.current = messagesStatus;
+    }, [messagesStatus, messages]);
 
     useEffect(() => {
         if (
