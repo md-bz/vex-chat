@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { redirect } from "next/navigation";
@@ -8,10 +8,12 @@ export function useMessages(channelId: string | null) {
     const convexChannelId = channelId ? (channelId as Id<"channels">) : null;
 
     // Query messages from Convex
-    const messages = useQuery(
-        api.messages.list,
-        convexChannelId ? { channelId: convexChannelId } : "skip"
-    );
+    const { results, status, loadMore } =
+        usePaginatedQuery(
+            api.messages.list,
+            convexChannelId ? { channelId: convexChannelId } : "skip",
+            { initialNumItems: 50 }
+        ) || [];
 
     // Get the send message mutation
     const sendMessageMutation = useMutation(api.messages.send);
@@ -30,7 +32,9 @@ export function useMessages(channelId: string | null) {
     };
 
     return {
-        messages,
+        messages: results.toReversed(),
+        messagesStatus: status,
+        loadMoreMessages: loadMore,
         sendMessage,
     };
 }

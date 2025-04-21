@@ -29,7 +29,9 @@ export default function ChatArea() {
     const lastSeenMessageTimeRef = useRef<number>(0);
 
     const { selectChannel, currentChannel } = useChatStore();
-    const { messages, sendMessage } = useMessages(currentChannel?._id || null);
+    const { loadMoreMessages, messagesStatus, messages, sendMessage } =
+        useMessages(currentChannel?._id || null);
+
     const { getChannel, createChannel, seenChannel, getChannelLastSeen } =
         useChannels();
 
@@ -38,13 +40,6 @@ export default function ChatArea() {
     let channelInfo = getChannel(currentChannel?._id || undefined);
 
     const lastSeenData = getChannelLastSeen(currentChannel?._id || undefined);
-
-    useEffect(() => {
-        if (scrollAreaRef.current) {
-            const scrollContainer = scrollAreaRef.current;
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-        }
-    }, [messages]);
 
     const debouncedSeenChannel = useDebouncedCallback(
         (channelId: Id<"channels">, lastSeenAt: number) => {
@@ -258,6 +253,7 @@ export default function ChatArea() {
                     <ChannelTopInfo />
                 </div>
             </div>
+            <button onClick={() => loadMoreMessages(50)}>Load more</button>
 
             <ScrollArea
                 className="flex-1 p-4 overflow-y-scroll h-20"

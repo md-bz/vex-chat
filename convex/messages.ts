@@ -5,26 +5,32 @@ import { getUser, isUserAdminOfChannel, isUserMemberOfChannel } from "./auth";
 import Autolinker from "autolinker";
 import xss from "xss";
 import { updateChannelLastSeen } from "./helper";
+import { paginationOptsValidator } from "convex/server";
 
 export const list = query({
-    args: { channelId: v.id("channels") },
+    args: {
+        channelId: v.id("channels"),
+        paginationOpts: paginationOptsValidator,
+    },
     handler: async (ctx, args) => {
         const isMember = await isUserMemberOfChannel(ctx, args.channelId);
         if (!isMember) {
             throw new ConvexError("Not a member of this channel");
         }
 
-        const messages = (
-            await ctx.db
-                .query("messages")
-                .withIndex("by_channel", (q) =>
-                    q.eq("channelId", args.channelId)
-                )
-                .order("desc")
-                .take(100)
-        ).reverse();
-        return await Promise.all(
-            messages.map(async (message) => {
+        args.paginationOpts.numItems =
+            args.paginationOpts.numItems > 100
+                ? 100
+                : args.paginationOpts.numItems;
+
+        const messages = await ctx.db
+            .query("messages")
+            .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
+            .order("desc")
+            .paginate(args.paginationOpts);
+
+        const page = await Promise.all(
+            messages.page.map(async (message) => {
                 const user = await ctx.db.get(message.userId);
                 return {
                     ...message,
@@ -32,6 +38,7 @@ export const list = query({
                 };
             })
         );
+        return { ...messages, page };
     },
 });
 
