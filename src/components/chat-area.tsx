@@ -21,6 +21,7 @@ import parse, { DOMNode, domToReact } from "html-react-parser";
 import { BackIcon } from "./ui/back-icon";
 import { Id } from "../../convex/_generated/dataModel";
 import JoinChannel from "./JoinChannel";
+import { Spinner } from "./ui/loading";
 
 export default function ChatArea() {
     const [messageText, setMessageText] = useState("");
@@ -50,6 +51,19 @@ export default function ChatArea() {
         },
         300
     );
+
+    // Handle scroll to load more messages
+    const handleScroll = useCallback(
+        (event: React.UIEvent<HTMLDivElement>) => {
+            const scrollTop = event.currentTarget.scrollTop;
+            // If we're near the top of the scroll area and can load more messages
+            if (scrollTop < 50 && messagesStatus === "CanLoadMore") {
+                loadMoreMessages(100);
+            }
+        },
+        [loadMoreMessages, messagesStatus]
+    );
+
     useEffect(() => {
         if (
             !currentChannel?._id ||
@@ -92,6 +106,7 @@ export default function ChatArea() {
             debouncedSeenChannel.cancel(); // Cleanup debounce
         };
     }, [messages, currentChannel?._id]);
+
     if (!currentChannel) {
         return;
     }
@@ -253,13 +268,18 @@ export default function ChatArea() {
                     <ChannelTopInfo />
                 </div>
             </div>
-            <button onClick={() => loadMoreMessages(50)}>Load more</button>
 
             <ScrollArea
                 className="flex-1 p-4 overflow-y-scroll h-20"
                 ref={scrollAreaRef}
+                onScroll={handleScroll}
             >
-                {messages === undefined ? (
+                {messagesStatus === "LoadingMore" && (
+                    <div className="flex justify-center py-2">
+                        <Spinner size="small" />
+                    </div>
+                )}
+                {messagesStatus === "LoadingFirstPage" ? (
                     <div className="flex flex-col gap-4">
                         {[...Array(6)].map((_, i) => {
                             const isOdd = i % 2 === 0;
