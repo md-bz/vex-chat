@@ -28,10 +28,10 @@ import { useAuth } from "@clerk/nextjs";
 import { Id } from "../../convex/_generated/dataModel";
 
 interface ChannelInfoPopupProps {
-    id: Id<"channels">;
+    id: Id<"channels"> | null;
     name: string;
     type: "channel" | "group" | "private";
-    createdAt: string | number;
+    createdAt?: number;
     members: User[] | undefined;
     inviteLink?: string;
     children: React.ReactNode;
@@ -67,7 +67,7 @@ export default function ChannelInfoPopup({
     };
 
     const generateInviteLink = async () => {
-        if (!userId) return;
+        if (!userId || !id) return;
         setGeneratingLink(true);
         try {
             const newLink = await createChannelLink(id);
@@ -93,6 +93,7 @@ export default function ChannelInfoPopup({
     };
 
     const formatCreationTime = () => {
+        if (!createdAt) return <>Unknown creation time</>;
         const date = new Date(createdAt).toDateString();
 
         return <>{date.toString()}</>;

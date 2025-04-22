@@ -1,12 +1,13 @@
 import type { Id } from "../../convex/_generated/dataModel";
 
 export interface Message {
-    id: string | Id<"messages">;
-    channelId: string | Id<"channels">;
-    channelType: "channel" | "group" | "dm";
-    text: string;
+    _id: Id<"messages">;
+    _creationTime: number;
+    channelId: Id<"channels">;
     userId: Id<"users">;
-    timestamp: string;
+    text: string;
+    timestamp: number;
+    user: User | null;
 }
 
 export interface User {
@@ -17,10 +18,15 @@ export interface User {
 }
 
 export interface Channel {
-    id: string | Id<"channels">;
+    _id: Id<"channels"> | null;
     name: string;
-    type: "channel" | "group" | "dm";
-    members?: string[];
+    type: "channel" | "group" | "private";
+    userId?: Id<"users">;
+    createdAt?: number;
+    members?: (User | null)[];
+    link?: string;
+    canSendMessages?: boolean;
+    isAdmin?: boolean;
 }
 
 export interface channelLastSeen {
