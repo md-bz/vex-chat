@@ -15,7 +15,7 @@ import { User } from "@/lib/types";
 import UserProfile from "./UserProfile";
 import { Button } from "./ui/button";
 import { useChatStore } from "@/lib/store";
-import { useContacts } from "@/lib/hooks";
+import { useChannels, useContacts } from "@/lib/hooks";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -48,6 +48,8 @@ export default function UserInfoPopup({ user, children }: UserInfoProps) {
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const { selectChannel } = useChatStore();
     const { addContact, deleteContact, contacts } = useContacts();
+    const { getSharedPrivate } = useChannels();
+    const sharedPrivate = getSharedPrivate(user._id);
     const [name, setName] = useState(user.name);
 
     const isContact = contacts.some(
@@ -57,7 +59,7 @@ export default function UserInfoPopup({ user, children }: UserInfoProps) {
 
     const handleSendMessage = async () => {
         selectChannel({
-            _id: null,
+            _id: sharedPrivate?._id || null,
             name: user.name,
             type: "private",
             userId: user._id,

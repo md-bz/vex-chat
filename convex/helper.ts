@@ -115,3 +115,26 @@ export async function getSharedChannels(
         sharedChannels: channels.filter((c) => c?.type !== "private"),
     };
 }
+
+export function generatePrivateChKey(userId1: string, userId2: string): string {
+    const [a, b] = [userId1, userId2].sort(); // Lexicographic sort
+    return `${a}_${b}`;
+}
+
+export async function getSharedPrivate(
+    ctx: QueryCtx | MutationCtx,
+    user1: Id<"users">,
+    user2: Id<"users">
+) {
+    const key = generatePrivateChKey(user1, user2);
+    const membership = await ctx.db
+        .query("channelMembers")
+        .withIndex("by_userId", (q) =>
+            q.eq("userId", user1).eq("privateMessageKey", key)
+        )
+        .first();
+    if (!membership) {
+        return null;
+    }
+    return await ctx.db.get(membership.channelId);
+}

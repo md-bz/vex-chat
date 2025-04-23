@@ -3,10 +3,11 @@ import { ConvexError, v } from "convex/values";
 import { getUser, isUserAdminOfChannel, isUserMemberOfChannel } from "./auth";
 import { nanoid } from "nanoid";
 import {
+    generatePrivateChKey,
     getChannelLastSeenInternal,
     getContactInfo,
     getSanitizedUser,
-    getSharedChannels,
+    getSharedPrivate,
     updateChannelLastSeen,
 } from "./helper";
 
@@ -163,6 +164,15 @@ export const get = query({
     },
 });
 
+export const getPrivateChannelIdByUserId = query({
+    args: { userId: v.id("users") },
+    handler: async (ctx, args) => {
+        const user = await getUser(ctx);
+
+        return await getSharedPrivate(ctx, user._id, args.userId);
+    },
+});
+
 export const create = mutation({
     args: {
         name: v.string(),
@@ -186,7 +196,7 @@ export const create = mutation({
                 throw new ConvexError("Private channels requires a member");
             }
 
-            const { sharedPrivate } = await getSharedChannels(
+            const sharedPrivate = await getSharedPrivate(
                 ctx,
                 user._id,
                 args.members[0]
@@ -201,13 +211,21 @@ export const create = mutation({
             createdAt: Date.now(),
         });
 
-        const link = nanoid();
-        await ctx.db.insert("channelLinks", {
-            channelId: id,
-            link,
-            createdAt: Date.now(),
-            createdBy: user._id,
-        });
+        if (type !== "private") {
+            const link = nanoid();
+            await ctx.db.insert("channelLinks", {
+                channelId: id,
+                link,
+                createdAt: Date.now(),
+                createdBy: user._id,
+            });
+        }
+
+        const privateMessageKey =
+            type === "private"
+                ? //@ts-ignore the members[0] is being checked in if condition
+                  generatePrivateChKey(user._id, args.members[0])
+                : undefined;
 
         const members = args.members ? [user._id, ...args.members] : [user._id];
 
@@ -226,6 +244,7 @@ export const create = mutation({
                 channelId: id,
                 userId: member,
                 isAdmin: member === user._id ? true : false,
+                privateMessageKey,
             });
         }
         return id;

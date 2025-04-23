@@ -62,6 +62,9 @@ export function useChannels() {
         });
     };
 
+    const getSharedPrivate = (userId: Id<"users">) =>
+        useQuery(api.channels.getPrivateChannelIdByUserId, { userId });
+
     const getChannel = (id?: Id<"channels">) =>
         useQuery(api.channels.get, id ? { id } : "skip");
     const createChannel = async (
@@ -96,6 +99,7 @@ export function useChannels() {
         getChannelLastSeen,
         joinChannel,
         createChannelLink,
+        getSharedPrivate,
     };
 }
 

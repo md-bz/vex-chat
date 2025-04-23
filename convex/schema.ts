@@ -27,8 +27,9 @@ export default defineSchema({
         channelId: v.id("channels"),
         userId: v.id("users"),
         isAdmin: v.boolean(),
+        privateMessageKey: v.optional(v.string()), // unique deterministic key for private messages
     })
-        .index("by_userId", ["userId"])
+        .index("by_userId", ["userId", "privateMessageKey"])
         .index("by_channelId", ["channelId"]),
 
     channelLinks: defineTable({
