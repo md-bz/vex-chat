@@ -46,7 +46,6 @@ export default function JoinChannel({
                     _id: channel._id,
                     name: channel.name,
                     type: "channel",
-                    userId: null,
                 });
                 setStatus({
                     type: "success",
