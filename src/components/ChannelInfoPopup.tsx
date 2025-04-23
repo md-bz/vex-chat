@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Check, Link as LinkIcon } from "lucide-react";
+import { LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -11,12 +11,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +21,7 @@ import { UserCard } from "./UserCard";
 import { useChannels } from "@/lib/hooks";
 import { useAuth } from "@clerk/nextjs";
 import { Id } from "../../convex/_generated/dataModel";
+import Copyable from "./Copyable";
 
 interface ChannelInfoPopupProps {
     id: Id<"channels"> | null;
@@ -48,7 +44,6 @@ export default function ChannelInfoPopup({
     children,
     isAdmin = false,
 }: ChannelInfoPopupProps) {
-    const [copied, setCopied] = useState(false);
     const [open, setOpen] = useState(false);
     const [generatingLink, setGeneratingLink] = useState(false);
     const domain = window.location.host;
@@ -58,13 +53,6 @@ export default function ChannelInfoPopup({
     );
     const { createChannelLink } = useChannels();
     const { userId } = useAuth();
-
-    const copyInviteLink = () => {
-        if (!currentInviteLink) return;
-        navigator.clipboard.writeText(currentInviteLink);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
 
     const generateInviteLink = async () => {
         if (!userId || !id) return;
@@ -130,30 +118,11 @@ export default function ChannelInfoPopup({
                                     <div className="bg-muted p-2 rounded-md text-xs flex-1 truncate">
                                         {currentInviteLink}
                                     </div>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    size="icon"
-                                                    variant="outline"
-                                                    onClick={copyInviteLink}
-                                                >
-                                                    {copied ? (
-                                                        <Check className="h-4 w-4" />
-                                                    ) : (
-                                                        <Copy className="h-4 w-4" />
-                                                    )}
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>
-                                                    {copied
-                                                        ? "Copied!"
-                                                        : "Copy invite link"}
-                                                </p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
+                                    <Copyable
+                                        value={currentInviteLink}
+                                        tooltipCopy="Copy invite link"
+                                        tooltipCopied="Copied!"
+                                    />
                                 </div>
                             ) : (
                                 <Button

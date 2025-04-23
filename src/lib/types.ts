@@ -13,6 +13,7 @@ export interface Message {
 export interface User {
     _id: Id<"users">;
     name: string;
+    username?: string;
     lastSeen?: number;
     imageUrl?: string;
 }

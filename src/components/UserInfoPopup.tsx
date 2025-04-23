@@ -3,6 +3,7 @@
 import type React from "react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import Copyable from "./Copyable";
 import {
     Dialog,
     DialogContent,
@@ -131,13 +132,32 @@ export default function UserInfoPopup({ user, children }: UserInfoProps) {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
-                        <DialogTitle>
+                        <DialogTitle className="py-5">
                             <UserProfile user={user} />
                         </DialogTitle>
                     </DialogHeader>
                     <div className="w-full border-0 shadow-none">
                         <div className="flex flex-col space-y-2 pt-0">
-                            <div className="flex items-center gap-2 py-5">
+                            {user.username && (
+                                <div className="pb-3">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xl ">{user.name}</p>
+                                        <Copyable
+                                            value={user.name}
+                                            tooltipCopy="Copy username"
+                                            tooltipCopied="Copied!"
+                                            buttonProps={{
+                                                size: "icon",
+                                                variant: "outline",
+                                            }}
+                                        />
+                                    </div>
+                                    <p className="text-sm text-muted-foreground ">
+                                        username
+                                    </p>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-2 pb-5">
                                 <Badge
                                     variant="outline"
                                     className="px-2 py-1 text-xs"
