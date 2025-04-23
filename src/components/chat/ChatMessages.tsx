@@ -134,7 +134,7 @@ export function ChatMessages({
                     <Spinner size="small" />
                 </div>
             )}
-            {messagesStatus === "LoadingFirstPage" ? (
+            {currentChannel?._id && messagesStatus === "LoadingFirstPage" ? (
                 <div className="flex flex-col gap-4">
                     {[...Array(6)].map((_, i) => {
                         const isOdd = i % 2 === 0;
