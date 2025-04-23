@@ -27,14 +27,16 @@ export default function ChatArea() {
             </div>
         );
     }
-    channelInfo = {
-        //@ts-ignore
-        _id: null,
-        type: currentChannel.type,
-        name: currentChannel.name,
-        members: [],
-        canSendMessage: true,
-    };
+
+    if (!currentChannel._id && !channelInfo)
+        //@ts-ignore this should only happen when private messaging someone new
+        channelInfo = channelInfo || {
+            _id: null,
+            type: currentChannel.type,
+            name: currentChannel.name,
+            members: [],
+            canSendMessage: true,
+        };
 
     if (!me || !channelInfo) return null;
     return (
