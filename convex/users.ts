@@ -37,7 +37,9 @@ export const getByUsername = query({
     handler: async (ctx, args) => {
         const user = await ctx.db
             .query("users")
-            .withIndex("by_username", (q) => q.eq("username", args.username))
+            .withIndex("by_username", (q) =>
+                q.eq("username", args.username.toLowerCase())
+            )
             .first();
 
         if (!user) {
@@ -71,10 +73,15 @@ export const create = mutation({
             return existing._id;
         }
 
-        if (args.username) {
+        const username = args.username
+            ?.replace(" ", "_")
+            .replace(" ", "-")
+            .toLowerCase();
+
+        if (username) {
             const result = await ctx.db
                 .query("users")
-                .filter((q) => q.eq(q.field("username"), args.username))
+                .filter((q) => q.eq(q.field("username"), username))
                 .first();
             if (result) {
                 throw new ConvexError("Username already taken");
@@ -83,7 +90,7 @@ export const create = mutation({
 
         const id = await ctx.db.insert("users", {
             name: args.name,
-            username: args.username,
+            username,
             tokenIdentifier: identity.tokenIdentifier,
         });
 
