@@ -106,6 +106,14 @@ export function useChannels() {
 export function useUsers() {
     const createUserMutation = useMutation(api.users.create);
     const updateLastSeenMutation = useMutation(api.users.updateLastSeen);
+    const getUserByUsername = (username: string) => {
+        try {
+            return useQuery(api.users.getByUsername, { username });
+        } catch (error) {
+            return null;
+        }
+    };
+
     const getMe = (redirectOnError = true) => {
         try {
             return useQuery(api.users.getMe);
@@ -135,6 +143,7 @@ export function useUsers() {
         getMe,
         searchUsers,
         getUserById,
+        getUserByUsername,
     };
 }
 

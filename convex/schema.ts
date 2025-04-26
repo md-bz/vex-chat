@@ -10,6 +10,7 @@ export default defineSchema({
         lastSeen: v.optional(v.number()),
     })
         .index("by_tokenIdentifier", ["tokenIdentifier"])
+        .index("by_username", ["username"])
         .searchIndex("search_username", { searchField: "username" }),
 
     channels: defineTable({

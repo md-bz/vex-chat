@@ -30,6 +30,24 @@ export const getById = query({
     },
 });
 
+export const getByUsername = query({
+    args: {
+        username: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_username", (q) => q.eq("username", args.username))
+            .first();
+
+        if (!user) {
+            throw new ConvexError("User not found");
+        }
+
+        return getSanitizedUser(user);
+    },
+});
+
 export const create = mutation({
     args: {
         name: v.string(),

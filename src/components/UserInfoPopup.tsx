@@ -16,7 +16,7 @@ import { User } from "@/lib/types";
 import UserProfile from "./UserProfile";
 import { Button } from "./ui/button";
 import { useChatStore } from "@/lib/store";
-import { useChannels, useContacts } from "@/lib/hooks";
+import { useChannels, useContacts, useUsers } from "@/lib/hooks";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -37,10 +37,36 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BackIcon } from "./ui/back-icon";
+import { toast } from "sonner";
+import { Toaster } from "./ui/sonner";
 
 interface UserInfoProps {
     user: User;
     children?: React.ReactNode;
+}
+
+export function UserInfoPopupFromUsername({
+    username,
+    children,
+}: {
+    username: string;
+    children?: React.ReactNode;
+}) {
+    const { getUserByUsername } = useUsers();
+    const user = getUserByUsername(username);
+    if (!user)
+        return (
+            <>
+                <Toaster position="bottom-center" visibleToasts={1} />
+                <div
+                    className="hover:cursor-pointer"
+                    onClick={() => toast.warning("User not found")}
+                >
+                    {children}
+                </div>
+            </>
+        );
+    return <UserInfoPopup user={user} children={children} />;
 }
 
 export default function UserInfoPopup({ user, children }: UserInfoProps) {

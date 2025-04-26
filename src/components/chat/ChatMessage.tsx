@@ -1,7 +1,7 @@
 import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Channel, Message, User } from "@/lib/types";
-import UserInfoPopup from "../UserInfoPopup";
+import UserInfoPopup, { UserInfoPopupFromUsername } from "../UserInfoPopup";
 import parse, { DOMNode, domToReact } from "html-react-parser";
 import { useChannels } from "@/lib/hooks";
 import { useChatStore } from "@/lib/store";
@@ -62,6 +62,18 @@ export default function ChatMessage({
 
     const options = {
         replace: (domNode: DOMNode) => {
+            if (domNode.type === "text") {
+                const text = domNode.data;
+                const mentionMatch = text.match(/@(\w+)/);
+                if (mentionMatch) {
+                    const username = mentionMatch[1];
+                    return (
+                        <UserInfoPopupFromUsername username={username}>
+                            <p className="text-blue-500">{text}</p>
+                        </UserInfoPopupFromUsername>
+                    );
+                }
+            }
             if (domNode.type === "tag" && domNode.name === "a") {
                 const domain = window.location.host;
                 const href = domNode.attribs.href;
@@ -143,9 +155,9 @@ export default function ChatMessage({
                                         : "bg-muted"
                                 }`}
                             >
-                                <p className="text-sm">
+                                <div className="text-sm">
                                     {parse(message.text, options)}
-                                </p>
+                                </div>
                             </div>
                             <div
                                 className={`text-xs text-muted-foreground flex items-center gap-1 ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
