@@ -13,6 +13,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { CheckCircle2, AlertCircle } from "lucide-react";
+import { ConvexError } from "convex/values";
 
 export default function JoinChannel({
     inviteLink,
@@ -54,11 +55,13 @@ export default function JoinChannel({
                 setTimeout(() => setIsOpen(false), 1500); // Auto-close on success
             }
         } catch (error: any) {
+            const errorMessage =
+                error instanceof ConvexError
+                    ? (error.data as string)
+                    : "Unexpected error occurred";
             setStatus({
                 type: "error",
-                message:
-                    error.message ||
-                    "Could not join channel. Invalid or expired link.",
+                message: errorMessage,
             });
         }
     };
