@@ -23,8 +23,8 @@ export function UserSearch() {
     }, [query]);
 
     return (
-        <div className="flex flex-col gap-2 w-full z-10">
-            <div className="flex items-center relative w-full">
+        <div className="relative w-full z-10">
+            <div className="flex items-center w-full">
                 <SearchIcon className="absolute left-3 h-4 w-4 text-muted-foreground" />
                 <Input
                     placeholder="Search users..."
@@ -45,7 +45,7 @@ export function UserSearch() {
             </div>
 
             {query && (
-                <div className="flex flex-col bg-background rounded-md shadow-lg border w-full max-h-60 overflow-auto">
+                <div className="absolute mt-1 left-0 w-full bg-background rounded-md shadow-lg border max-h-60 overflow-auto z-20">
                     {!results ? (
                         <div className="flex flex-col gap-2 p-2">
                             {[...Array(3)].map((_, i) => (
