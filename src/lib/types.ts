@@ -8,6 +8,7 @@ export interface Message {
     text: string;
     timestamp: number;
     user: User | null;
+    repliedMessage?: Id<"messages">;
 }
 
 export interface User {

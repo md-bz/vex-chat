@@ -170,6 +170,9 @@ export function ChatMessages({
                             formatTime(message.timestamp, true);
 
                     if (!message || !me) return null;
+                    const repliedMessage = message.replyTo
+                        ? messages.find((m) => m._id === message.replyTo)
+                        : null;
                     return (
                         <ChatMessage
                             channelInfo={channelInfo}
@@ -178,6 +181,7 @@ export function ChatMessages({
                             showDateSeparator={showDateSeparator}
                             messageRefs={messageRefs}
                             key={message._id}
+                            repliedMessage={repliedMessage}
                         />
                     );
                 })

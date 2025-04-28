@@ -3,9 +3,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Channel, Message, User } from "@/lib/types";
 import UserInfoPopup, { UserInfoPopupFromUsername } from "../UserInfoPopup";
 import parse, { DOMNode, domToReact } from "html-react-parser";
-import { useChannels } from "@/lib/hooks";
+import { useChannels, useMessages } from "@/lib/hooks";
 import { useChatStore } from "@/lib/store";
-import { Check, CheckCheck, EyeIcon } from "lucide-react";
+import { Check, CheckCheck, EyeIcon, Reply } from "lucide-react";
 import JoinChannel from "../JoinChannel";
 import { formatTime } from "@/lib/utils";
 
@@ -15,12 +15,14 @@ export default function ChatMessage({
     me,
     showDateSeparator,
     messageRefs,
+    repliedMessage,
 }: {
     channelInfo?: Channel;
     message: Message;
     me: User;
     showDateSeparator: boolean;
     messageRefs: React.RefObject<Map<string, HTMLDivElement>>;
+    repliedMessage?: Message | null;
 }) {
     const { getChannelLastSeen } = useChannels();
     const { currentChannel } = useChatStore();
@@ -155,6 +157,22 @@ export default function ChatMessage({
                                         : "bg-muted"
                                 }`}
                             >
+                                {repliedMessage && (
+                                    <div className="mb-2 text-xs border-l-2 pl-2 cursor-pointer hover:opacity-80">
+                                        <>
+                                            <div className="flex items-center gap-1 text-muted-foreground">
+                                                <Reply className="h-3 w-3" />
+                                                <span>Reply to</span>
+                                            </div>
+                                            <div className="line-clamp-1">
+                                                {parse(
+                                                    repliedMessage.text || "",
+                                                    options
+                                                )}
+                                            </div>
+                                        </>
+                                    </div>
+                                )}
                                 <div className="text-sm">
                                     {parse(message.text, options)}
                                 </div>
