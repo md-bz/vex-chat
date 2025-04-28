@@ -22,12 +22,14 @@ export function useMessages(channelId: string | null) {
         channelId: string;
         text: string;
         timestamp: string;
+        replyTo?: Id<"messages">;
     }) => {
         if (!message.channelId) return;
 
         await sendMessageMutation({
             channelId: message.channelId as Id<"channels">,
             text: message.text,
+            replyTo: message.replyTo,
         });
     };
 
