@@ -46,6 +46,7 @@ export const send = mutation({
     args: {
         channelId: v.id("channels"),
         text: v.string(),
+        replyTo: v.optional(v.id("messages")),
     },
     handler: async (ctx, args) => {
         const timestamp = Date.now();
@@ -74,6 +75,7 @@ export const send = mutation({
             }),
             userId: user._id,
             timestamp,
+            replyTo: args.replyTo,
         });
 
         return id;

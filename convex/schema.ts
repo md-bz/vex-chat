@@ -47,6 +47,7 @@ export default defineSchema({
         text: v.string(),
         userId: v.id("users"),
         timestamp: v.number(),
+        replyTo: v.optional(v.id("messages")),
     }).index("by_channel", ["channelId"]),
 
     channelLastSeen: defineTable({
