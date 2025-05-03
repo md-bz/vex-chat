@@ -86,11 +86,13 @@ export const getAll = query({
                 if (c === null) console.warn("Channel not found", c);
                 return c !== null;
             })
-            .sort(
-                (a, b) =>
-                    b.messages[b.messages.length - 1]?._creationTime -
-                    a.messages[a.messages.length - 1]?._creationTime
-            );
+            .sort((a, b) => {
+                const timeA =
+                    a.messages[a.messages.length - 1]?._creationTime || 0;
+                const timeB =
+                    b.messages[b.messages.length - 1]?._creationTime || 0;
+                return timeB - timeA;
+            });
     },
 });
 
