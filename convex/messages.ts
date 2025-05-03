@@ -61,6 +61,12 @@ export const send = mutation({
                 throw new ConvexError("You are not an admin of this channel");
         }
 
+        const isMember = await isUserMemberOfChannel(ctx, args.channelId);
+
+        if (!isMember) {
+            throw new ConvexError("Not a member of this channel");
+        }
+
         const user = await getUser(ctx);
 
         // few ms delay to avoid the last message being unseen when u send it yourself
