@@ -15,14 +15,12 @@ export default function ChatMessage({
     me,
     showDateSeparator,
     messageRefs,
-    repliedMessage,
 }: {
     channelInfo?: Channel;
     message: Message;
     me: User;
     showDateSeparator: boolean;
     messageRefs: React.RefObject<Map<string, HTMLDivElement>>;
-    repliedMessage?: Message | null;
 }) {
     const { getChannelLastSeen } = useChannels();
     const { currentChannel } = useChatStore();
@@ -157,7 +155,7 @@ export default function ChatMessage({
                                         : "bg-muted"
                                 }`}
                             >
-                                {repliedMessage && (
+                                {message.repliedMessage && (
                                     <div className="mb-2 text-xs border-l-2 pl-2 cursor-pointer hover:opacity-80">
                                         <>
                                             <div className="flex items-center gap-1 text-muted-foreground">
@@ -166,7 +164,8 @@ export default function ChatMessage({
                                             </div>
                                             <div className="line-clamp-1">
                                                 {parse(
-                                                    repliedMessage.text || "",
+                                                    message.repliedMessage
+                                                        .text || "",
                                                     options
                                                 )}
                                             </div>

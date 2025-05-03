@@ -32,8 +32,13 @@ export const list = query({
         const page = await Promise.all(
             messages.page.map(async (message) => {
                 const user = await ctx.db.get(message.userId);
+                const repliedMessage = message.replyTo
+                    ? await ctx.db.get(message.replyTo)
+                    : null;
+
                 return {
                     ...message,
+                    repliedMessage,
                     user,
                 };
             })
@@ -71,6 +76,24 @@ export const send = mutation({
 
         // few ms delay to avoid the last message being unseen when u send it yourself
         await updateChannelLastSeen(ctx, user._id, channel._id, timestamp + 5);
+
+        if (args.replyTo) {
+            const replyToMessage = await ctx.db.get(args.replyTo);
+            if (!replyToMessage) {
+                throw new ConvexError("Reply to message not found");
+            }
+            if (replyToMessage.channelId !== args.channelId) {
+                const isMember = await isUserMemberOfChannel(
+                    ctx,
+                    replyToMessage.channelId
+                );
+                if (!isMember) {
+                    throw new ConvexError(
+                        "Not a member of this channel to reply to"
+                    );
+                }
+            }
+        }
 
         const id = await ctx.db.insert("messages", {
             channelId: channel._id,
