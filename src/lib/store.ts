@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Channel } from "./types";
+import { Channel, Message } from "./types";
 
 interface ChatStore {
     currentChannel: Channel | null;
@@ -9,4 +9,16 @@ interface ChatStore {
 export const useChatStore = create<ChatStore>((set) => ({
     currentChannel: null,
     selectChannel: (channel) => set({ currentChannel: channel }),
+}));
+
+interface ReplyMessageStore {
+    replyMessage: Message | null;
+    setReplyMessage: (message: Message) => void;
+    clearReplyMessage: () => void;
+}
+
+export const useReplyMessageStore = create<ReplyMessageStore>((set) => ({
+    replyMessage: null,
+    setReplyMessage: (message) => set({ replyMessage: message }),
+    clearReplyMessage: () => set({ replyMessage: null }),
 }));

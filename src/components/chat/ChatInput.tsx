@@ -1,15 +1,16 @@
-import { useChatStore } from "@/lib/store";
+import { useChatStore, useReplyMessageStore } from "@/lib/store";
 import { Input } from "../ui/input";
 import { useState } from "react";
 import { useChannels, useMessages } from "@/lib/hooks";
 import { Button } from "../ui/button";
-import { SendIcon } from "lucide-react";
+import { ReplyIcon, SendIcon } from "lucide-react";
 
 export function ChatInput() {
     const [messageText, setMessageText] = useState("");
     const { currentChannel } = useChatStore();
     const { createChannel } = useChannels();
     const { sendMessage } = useMessages(currentChannel?._id || null);
+    const { replyMessage, clearReplyMessage } = useReplyMessageStore();
 
     const handleSendMessage = async () => {
         if (!messageText.trim() || !currentChannel) return;
@@ -25,8 +26,10 @@ export function ChatInput() {
             channelId: currentChannel._id,
             text: messageText,
             timestamp: new Date().toISOString(),
+            replyTo: replyMessage?._id,
         });
         setMessageText("");
+        clearReplyMessage();
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -39,6 +42,20 @@ export function ChatInput() {
     return (
         <div className="p-1">
             <div className="flex gap-2">
+                {replyMessage && (
+                    <div className="reply-preview bg-primary-foreground px-2 rounded flex justify-between items-center">
+                        <div className="text-sm truncate max-w-[100px] flex flex-row gap-1">
+                            <ReplyIcon className="h-4 w-4 text-muted-foreground" />
+                            {replyMessage.text}
+                        </div>
+                        <button
+                            onClick={clearReplyMessage}
+                            className="text-xs text-red-500 ml-2"
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
                 <Input
                     placeholder={`Message ${currentChannel?.name}...`}
                     value={messageText}

@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Channel, Message, User } from "@/lib/types";
 import UserInfoPopup, { UserInfoPopupFromUsername } from "../UserInfoPopup";
 import parse, { DOMNode, domToReact } from "html-react-parser";
 import { useChannels, useMessages } from "@/lib/hooks";
-import { useChatStore } from "@/lib/store";
+import { useChatStore, useReplyMessageStore } from "@/lib/store";
 import { Check, CheckCheck, EyeIcon, Reply } from "lucide-react";
 import JoinChannel from "../JoinChannel";
 import { formatTime } from "@/lib/utils";
+import { useSwipeable } from "react-swipeable";
 
 export default function ChatMessage({
     channelInfo,
@@ -25,6 +26,26 @@ export default function ChatMessage({
     const { getChannelLastSeen } = useChannels();
     const { currentChannel } = useChatStore();
 
+    const [offset, setOffset] = useState(0);
+    const { setReplyMessage } = useReplyMessageStore();
+
+    const handlers = useSwipeable({
+        onSwiping: (eventData) => {
+            if (eventData.dir === "Left") setOffset(eventData.absX);
+        },
+        onSwipedLeft: (eventData) => {
+            eventData.event.stopPropagation();
+            setOffset(0);
+            setReplyMessage(message);
+            console.log(eventData);
+        },
+        delta: 10,
+        preventScrollOnSwipe: true,
+        trackTouch: true,
+        trackMouse: true,
+        rotationAngle: 0,
+        swipeDuration: Infinity,
+    });
     const lastSeenData = getChannelLastSeen(currentChannel?._id || undefined);
 
     const getMessageStatus = (message: Message) => {
@@ -107,6 +128,7 @@ export default function ChatMessage({
             )}
             <div>
                 <div
+                    {...handlers}
                     ref={(node) => {
                         if (node) {
                             messageRefs.current.set(message._id, node);
@@ -116,6 +138,7 @@ export default function ChatMessage({
                     }}
                     data-message-id={message._id}
                     className={`flex ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
+                    style={{ transform: `translateX(-${offset}px)` }}
                 >
                     <div
                         className={`flex max-w-[70%] ${message.userId === me?._id ? "flex-row-reverse" : "flex-row"}`}
