@@ -41,21 +41,18 @@ export function ChatInput() {
 
     return (
         <div className="p-1">
-            <div className="flex gap-2">
-                {replyMessage && (
-                    <div className="reply-preview bg-primary-foreground px-2 rounded flex justify-between items-center">
-                        <div className="text-sm truncate max-w-[100px] flex flex-row gap-1">
-                            <ReplyIcon className="h-4 w-4 text-muted-foreground" />
-                            {replyMessage.text}
-                        </div>
-                        <button
-                            onClick={clearReplyMessage}
-                            className="text-xs text-red-500 ml-2"
-                        >
-                            ×
-                        </button>
+            {replyMessage && (
+                <div className="bg-primary-foreground px-2 py-1 rounded mb-2 flex justify-between items-center">
+                    <div className="text-sm truncate max-w-[200px] flex flex-row gap-1">
+                        <ReplyIcon className="h-4 w-4 text-muted-foreground" />
+                        {replyMessage.text}
                     </div>
-                )}
+                    <button onClick={clearReplyMessage} className="ml-2">
+                        ×
+                    </button>
+                </div>
+            )}
+            <div className="flex gap-2">
                 <Input
                     placeholder={`Message ${currentChannel?.name}...`}
                     value={messageText}
