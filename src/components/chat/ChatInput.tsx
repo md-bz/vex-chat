@@ -5,6 +5,8 @@ import { useChannels, useMessages } from "@/lib/hooks";
 import { Button } from "../ui/button";
 import { ReplyIcon, SendIcon, SmileIcon, X } from "lucide-react";
 import EmojiPicker, { Theme } from "emoji-picker-react";
+import { direction } from "direction";
+import { cssDirection } from "@/lib/utils";
 
 export function ChatInput() {
     const [messageText, setMessageText] = useState("");
@@ -52,7 +54,12 @@ export function ChatInput() {
                 <div className="bg-primary-foreground px-2 py-1 rounded mb-2 flex justify-between">
                     <div className="flex gap-1 items-center">
                         <ReplyIcon className="h-4 w-4" />
-                        <p className="overflow-hidden h-5 w-full text-muted-foreground">
+                        <p
+                            className="overflow-hidden h-5 w-full text-muted-foreground"
+                            style={{
+                                direction: cssDirection(replyMessage.text),
+                            }}
+                        >
                             {replyMessage.text}
                         </p>
                     </div>
@@ -74,6 +81,10 @@ export function ChatInput() {
 
                 <Input
                     placeholder={`Message ${currentChannel?.name}...`}
+                    style={{
+                        direction:
+                            cssDirection(messageText) === "rtl" ? "rtl" : "ltr",
+                    }}
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     onKeyDown={handleKeyDown}

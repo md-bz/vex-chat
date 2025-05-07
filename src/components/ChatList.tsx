@@ -9,7 +9,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatTime } from "@/lib/utils";
+import { cssDirection, formatTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "./ui/scroll-area";
 
@@ -165,7 +165,14 @@ export const ChatList = () => {
                                                 </div>
                                             </div>
                                             {lastMessage && (
-                                                <p className="text-muted-foreground truncate w-full text-start">
+                                                <p
+                                                    className="text-muted-foreground truncate w-full text-start"
+                                                    style={{
+                                                        direction: cssDirection(
+                                                            lastMessage.text
+                                                        ),
+                                                    }}
+                                                >
                                                     {lastMessage.text}
                                                 </p>
                                             )}

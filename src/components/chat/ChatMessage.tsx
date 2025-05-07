@@ -7,7 +7,7 @@ import { useChannels, useMessages } from "@/lib/hooks";
 import { useChatStore, useReplyMessageStore } from "@/lib/store";
 import { Check, CheckCheck, EyeIcon, Reply } from "lucide-react";
 import JoinChannel from "../JoinChannel";
-import { formatTime } from "@/lib/utils";
+import { cssDirection, formatTime } from "@/lib/utils";
 import { useSwipeable } from "react-swipeable";
 
 export default function ChatMessage({
@@ -185,7 +185,14 @@ export default function ChatMessage({
                                                 <Reply className="h-3 w-3" />
                                                 <span>Reply to</span>
                                             </div>
-                                            <div className="line-clamp-1">
+                                            <div
+                                                className="line-clamp-1"
+                                                style={{
+                                                    direction: cssDirection(
+                                                        message.text
+                                                    ),
+                                                }}
+                                            >
                                                 {parse(
                                                     message.repliedMessage
                                                         .text || "",
@@ -195,7 +202,12 @@ export default function ChatMessage({
                                         </>
                                     </div>
                                 )}
-                                <div className="text-sm">
+                                <div
+                                    className="text-sm"
+                                    style={{
+                                        direction: cssDirection(message.text),
+                                    }}
+                                >
                                     {parse(message.text, options)}
                                 </div>
                             </div>
