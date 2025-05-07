@@ -89,7 +89,7 @@ export function ChatInput() {
             </div>
 
             {showEmojiPicker && (
-                <div className="absolute z-50 w-100 not-md:w-[98vw] md:bottom-10 py-1">
+                <div className="absolute z-50 w-100 not-md:w-[calc(100vw-0.5em)] md:bottom-10 py-1">
                     <EmojiPicker
                         onEmojiClick={handleEmojiClick}
                         theme={Theme.DARK}
