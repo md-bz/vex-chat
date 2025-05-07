@@ -3,7 +3,7 @@ import { Input } from "../ui/input";
 import { useState } from "react";
 import { useChannels, useMessages } from "@/lib/hooks";
 import { Button } from "../ui/button";
-import { ReplyIcon, SendIcon } from "lucide-react";
+import { ReplyIcon, SendIcon, X } from "lucide-react";
 
 export function ChatInput() {
     const [messageText, setMessageText] = useState("");
@@ -42,16 +42,19 @@ export function ChatInput() {
     return (
         <div className="p-1">
             {replyMessage && (
-                <div className="bg-primary-foreground px-2 py-1 rounded mb-2 flex justify-between items-center">
-                    <div className="text-sm truncate max-w-[200px] flex flex-row gap-1">
-                        <ReplyIcon className="h-4 w-4 text-muted-foreground" />
-                        {replyMessage.text}
+                <div className="bg-primary-foreground px-2 py-1 rounded mb-2 flex justify-between">
+                    <div className="flex gap-1 items-center">
+                        <ReplyIcon className="h-4 w-4" />
+                        <p className="overflow-hidden h-5 w-full text-muted-foreground">
+                            {replyMessage.text}
+                        </p>
                     </div>
                     <button onClick={clearReplyMessage} className="ml-2">
-                        ×
+                        <X className="h-4 w-4" />
                     </button>
                 </div>
             )}
+
             <div className="flex gap-2">
                 <Input
                     placeholder={`Message ${currentChannel?.name}...`}
