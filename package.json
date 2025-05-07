@@ -29,6 +29,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "convex": "^1.21.0",
+        "emoji-picker-react": "^4.12.2",
         "html-react-parser": "^5.2.3",
         "lucide-react": "^0.483.0",
         "nanoid": "^5.1.5",
