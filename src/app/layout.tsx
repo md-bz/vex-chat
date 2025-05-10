@@ -21,6 +21,9 @@ export default function RootLayout({
     const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
     return (
         <html lang="en" suppressHydrationWarning>
+            <head>
+                <link rel="manifest" href="/manifest.json" />
+            </head>
             <body className={inter.className}>
                 <ThemeProvider
                     attribute="class"
