@@ -1,6 +1,7 @@
 "use client";
 import ChatArea from "@/components/chat-area";
 import { SideMenu } from "@/components/SideMenu";
+import { Toaster } from "@/components/ui/sonner";
 import { useChatStore } from "@/lib/store";
 import { Authenticated } from "convex/react";
 
@@ -13,6 +14,7 @@ export default function ChatLayout({
 
     return (
         <div className="flex h-screen">
+            <Toaster position="bottom-center" visibleToasts={1} />
             <Authenticated>
                 <div
                     className={`h-full p-4 w-64 bg-primary-foreground flex flex-col not-md:w-full ${currentChannel ? "not-md:hidden" : ""}`}

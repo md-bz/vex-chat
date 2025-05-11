@@ -38,7 +38,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BackIcon } from "./ui/back-icon";
 import { toast } from "sonner";
-import { Toaster } from "./ui/sonner";
 
 interface UserInfoProps {
     user: User;
@@ -57,7 +56,6 @@ export function UserInfoPopupFromUsername({
     if (!user)
         return (
             <>
-                <Toaster position="bottom-center" visibleToasts={1} />
                 <div
                     className="hover:cursor-pointer"
                     onClick={() => toast.warning("User not found")}
