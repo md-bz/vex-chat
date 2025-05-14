@@ -4,7 +4,7 @@ import { ConvexError } from "convex/values";
 import { getUser, isUserAdminOfChannel, isUserMemberOfChannel } from "./auth";
 import Autolinker from "autolinker";
 import xss from "xss";
-import { updateChannelLastSeen } from "./helper";
+import { updateChannelLastSeen, updateLastSeen } from "./helper";
 import { paginationOptsValidator } from "convex/server";
 
 export const list = query({
@@ -76,6 +76,8 @@ export const send = mutation({
 
         // few ms delay to avoid the last message being unseen when u send it yourself
         await updateChannelLastSeen(ctx, user._id, channel._id, timestamp + 5);
+
+        await updateLastSeen(ctx, user._id, timestamp);
 
         if (args.replyTo) {
             const replyToMessage = await ctx.db.get(args.replyTo);

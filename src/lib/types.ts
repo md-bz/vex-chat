@@ -22,7 +22,7 @@ export interface User {
     _id: Id<"users">;
     name: string;
     username?: string;
-    lastSeen?: number;
+    lastSeen?: number | string;
     imageUrl?: string;
 }
 

@@ -92,6 +92,8 @@ export const create = mutation({
             name: args.name,
             username,
             tokenIdentifier: identity.tokenIdentifier,
+            showLastSeen: true,
+            lastSeen: Date.now(),
         });
 
         return id;

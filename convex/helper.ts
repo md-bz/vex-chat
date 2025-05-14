@@ -1,9 +1,38 @@
 import { Doc, Id } from "./_generated/dataModel";
 import { MutationCtx, QueryCtx } from "./_generated/server";
 
+export async function migrate(ctx: MutationCtx) {
+    const users = await ctx.db.query("users").collect();
+    for (const user of users) {
+        ctx.db.patch(user._id, {
+            lastSeen: user.lastSeen || Date.now(),
+            showLastSeen: user.showLastSeen || true,
+        });
+    }
+}
+
+export function formatLastSeen(timestamp: number) {
+    const now = new Date();
+    const date = new Date(timestamp);
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 48) {
+        return "recently";
+    } else if (diffInHours < 7 * 24) {
+        return "within a week";
+    } else if (diffInHours < 30 * 24) {
+        return "within a month";
+    } else {
+        return "more then a month";
+    }
+}
 export function getSanitizedUser(user: Doc<"users">) {
     const { _creationTime, tokenIdentifier, ...sanitizedUser } = user;
-    return sanitizedUser;
+    const lastSeen = user.showLastSeen
+        ? user.lastSeen
+        : formatLastSeen(user.lastSeen);
+
+    return { ...sanitizedUser, lastSeen };
 }
 
 export async function updateChannelLastSeen(
@@ -137,4 +166,11 @@ export async function getSharedPrivate(
         return null;
     }
     return await ctx.db.get(membership.channelId);
+}
+export function updateLastSeen(
+    ctx: MutationCtx,
+    userId: Id<"users">,
+    timestamp?: number
+) {
+    return ctx.db.patch(userId, { lastSeen: timestamp || Date.now() });
 }
