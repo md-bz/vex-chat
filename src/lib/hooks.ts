@@ -107,7 +107,9 @@ export function useChannels() {
 
 export function useUsers() {
     const createUserMutation = useMutation(api.users.create);
-    const updateLastSeenMutation = useMutation(api.users.updateLastSeen);
+    const updateLastSeenMutation = useMutation(
+        api.users.updateLastSeenMutation
+    );
     const getUserByUsername = (username: string) => {
         try {
             return useQuery(api.users.getByUsername, { username });

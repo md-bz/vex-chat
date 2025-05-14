@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { getUser } from "./auth";
-import { getSanitizedUser } from "./helper";
+import { getSanitizedUser, updateLastSeen } from "./helper";
 
 export const getAll = query({
     handler: async (ctx) => {
@@ -100,13 +100,11 @@ export const create = mutation({
     },
 });
 
-export const updateLastSeen = mutation({
+export const updateLastSeenMutation = mutation({
     args: {},
-    handler: async (ctx, args) => {
+    handler: async (ctx) => {
         const user = await getUser(ctx);
-        await ctx.db.patch(user._id, {
-            lastSeen: Date.now(),
-        });
+        await updateLastSeen(ctx, user._id);
     },
 });
 
