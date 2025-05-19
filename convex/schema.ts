@@ -8,7 +8,7 @@ export default defineSchema({
         imageUrl: v.optional(v.string()),
         username: v.optional(v.string()),
         lastSeen: v.number(),
-        showLastSeen: v.boolean(),
+        showLastSeen: v.optional(v.boolean()),
     })
         .index("by_tokenIdentifier", ["tokenIdentifier"])
         .index("by_username", ["username"])
