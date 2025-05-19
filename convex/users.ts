@@ -123,16 +123,3 @@ export const search = query({
         return users;
     },
 });
-
-//migration for old users without the soon to be required showLastSeen field
-export const migrateUserShowLastSeen = mutation({
-    args: {},
-    handler: async (ctx) => {
-        const users = await ctx.db.query("users").collect();
-        for (const user of users) {
-            await ctx.db.patch(user._id, {
-                showLastSeen: true,
-            });
-        }
-    },
-});
