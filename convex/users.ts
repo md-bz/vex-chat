@@ -1,7 +1,12 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { getUser } from "./auth";
-import { getSanitizedUser, updateLastSeen } from "./helper";
+import {
+    generatePrivateChKey,
+    getSanitizedUser,
+    updateLastSeen,
+} from "./helper";
+import { Id } from "./_generated/dataModel";
 
 export const getAll = query({
     handler: async (ctx) => {
@@ -96,6 +101,51 @@ export const create = mutation({
             lastSeen: Date.now(),
         });
 
+        const channels = process.env.NEW_MEMBER_CHANNELS_IDS;
+        if (channels) {
+            const channelIds = channels.split(".") as Id<"channels">[];
+            try {
+                for (const channelId of channelIds) {
+                    await ctx.db.insert("channelMembers", {
+                        channelId: channelId,
+                        userId: id,
+                        isAdmin: false,
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to add new member to channel:", error);
+            }
+        }
+
+        const creator = process.env.CREATOR_ID as Id<"users"> | undefined;
+
+        if (creator) {
+            try {
+                const channelWithCreator = await ctx.db.insert("channels", {
+                    name: "chat",
+                    type: "private",
+                    createdBy: creator,
+                    createdAt: Date.now(),
+                });
+                const privateMessageKey = generatePrivateChKey(creator, id);
+
+                await ctx.db.insert("channelMembers", {
+                    channelId: channelWithCreator,
+                    userId: creator,
+                    isAdmin: true,
+                    privateMessageKey,
+                });
+
+                await ctx.db.insert("channelMembers", {
+                    channelId: channelWithCreator,
+                    userId: id,
+                    isAdmin: false,
+                    privateMessageKey,
+                });
+            } catch (error) {
+                console.error("Failed to create private with creator:", error);
+            }
+        }
         return id;
     },
 });
@@ -121,5 +171,33 @@ export const search = query({
             .collect();
 
         return users;
+    },
+});
+
+export const migrate = mutation({
+    args: {},
+    handler: async (ctx) => {
+        const channels = process.env.NEW_MEMBER_CHANNELS_IDS;
+        if (!channels) return;
+
+        const channelIds = channels.split(".") as Id<"channels">[];
+
+        const users = await ctx.db.query("users").collect();
+
+        for (const user of users) {
+            for (const channelId of channelIds) {
+                const isMember = await ctx.db
+                    .query("channelMembers")
+                    .withIndex("by_userId", (q) => q.eq("userId", user._id))
+                    .filter((q) => q.eq(q.field("channelId"), channelId))
+                    .first();
+                if (isMember) continue;
+                await ctx.db.insert("channelMembers", {
+                    channelId: channelId,
+                    userId: user._id,
+                    isAdmin: false,
+                });
+            }
+        }
     },
 });
