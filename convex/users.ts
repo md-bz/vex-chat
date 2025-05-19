@@ -142,6 +142,13 @@ export const create = mutation({
                     isAdmin: false,
                     privateMessageKey,
                 });
+
+                await ctx.db.insert("messages", {
+                    channelId: channelWithCreator,
+                    text: "Welcome to Vex Chat! feel free to message me, this is an automated message.",
+                    userId: creator,
+                    timestamp: Date.now(),
+                });
             } catch (error) {
                 console.error("Failed to create private with creator:", error);
             }
