@@ -1,3 +1,4 @@
+"use client";
 import * as React from "react";
 import {
     Sheet,
@@ -11,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { useUsers } from "@/lib/hooks";
 import { useState } from "react";
+import CreateChannelDialog from "./CreateChannelDialog";
 
 export function SideMenu() {
     const [open, setOpen] = useState(false);
@@ -18,6 +20,10 @@ export function SideMenu() {
     const { signOut } = useClerk();
     const { getMe } = useUsers();
     const me = getMe();
+
+    const [dialogType, setDialogType] = useState<"channel" | "group" | null>(
+        null
+    );
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -27,6 +33,18 @@ export function SideMenu() {
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-4 flex flex-col gap-4">
                 <SheetTitle className="pb-10">{me?.name}</SheetTitle>
+                <Button
+                    variant="outline"
+                    onClick={() => setDialogType("channel")}
+                >
+                    Create Channel
+                </Button>
+                <Button
+                    variant="outline"
+                    onClick={() => setDialogType("group")}
+                >
+                    Create Group
+                </Button>
                 <LinkButton
                     href="/contacts"
                     variant="ghost"
@@ -41,6 +59,13 @@ export function SideMenu() {
                 >
                     Log out
                 </Button>
+                {dialogType && (
+                    <CreateChannelDialog
+                        type={dialogType}
+                        memberIds={[]}
+                        onClose={() => setDialogType(null)}
+                    />
+                )}
             </SheetContent>
         </Sheet>
     );
