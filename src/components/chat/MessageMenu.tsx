@@ -9,6 +9,14 @@ import {
     ContextMenuItem,
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface MessageMenuProps {
     message: Message;
@@ -37,29 +45,55 @@ export default function MessageMenu({
         deleteMessage(message._id);
     };
 
+    function DeleteConfirmation() {
+        return (
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete message?</DialogTitle>
+                    </DialogHeader>
+                    <p>
+                        This action cannot be undone. Are you sure you want to
+                        delete this message?
+                    </p>
+                    <DialogFooter>
+                        <Button
+                            variant="secondary"
+                            onClick={() => setOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete}>
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
     return (
-        <>
-            <ContextMenu>
-                <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-                <ContextMenuContent className="w-48">
-                    <ContextMenuItem onClick={handleReply}>
-                        <Reply className="h-4 w-4 mr-2" /> Reply
-                    </ContextMenuItem>
-                    {message.userId === me._id && (
-                        <>
-                            <ContextMenuItem onClick={handleEdit}>
-                                <Edit className="h-4 w-4 mr-2" /> Edit
-                            </ContextMenuItem>
-                            <ContextMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={handleDelete}
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
-                            </ContextMenuItem>
-                        </>
-                    )}
-                </ContextMenuContent>
-            </ContextMenu>
-        </>
+        <ContextMenu>
+            <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+            <ContextMenuContent className="w-48">
+                <ContextMenuItem onClick={handleReply}>
+                    <Reply className="h-4 w-4 mr-2" /> Reply
+                </ContextMenuItem>
+                {message.userId === me._id && (
+                    <>
+                        <ContextMenuItem onClick={handleEdit}>
+                            <Edit className="h-4 w-4 mr-2" /> Edit
+                        </ContextMenuItem>
+                        <ContextMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setOpen(true)}
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" /> Delete
+                        </ContextMenuItem>
+                    </>
+                )}
+            </ContextMenuContent>
+            <DeleteConfirmation />
+        </ContextMenu>
     );
 }
