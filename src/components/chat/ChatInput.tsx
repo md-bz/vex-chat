@@ -1,8 +1,4 @@
-import {
-    useChatStore,
-    useReplyMessageStore,
-    useEditMessageStore,
-} from "@/lib/store";
+import { useChatStore, useSelectMessageStore } from "@/lib/store";
 import { Input } from "../ui/input";
 import { useState, useEffect } from "react";
 import { useChannels, useMessages } from "@/lib/hooks";
@@ -19,22 +15,22 @@ export function ChatInput() {
     const { sendMessage, editMessage } = useMessages(
         currentChannel?._id || null
     );
-    const { replyMessage, clearReplyMessage } = useReplyMessageStore();
-    const { editingMessage, setEditingMessage } = useEditMessageStore();
+    const { selectedMessage, selectType, clearSelectedMessage } =
+        useSelectMessageStore();
 
     // Update input text when editing message changes
     useEffect(() => {
-        if (editingMessage) {
-            setMessageText(editingMessage.text);
+        if (selectType === "edit" && selectedMessage) {
+            setMessageText(selectedMessage.text);
         }
-    }, [editingMessage]);
+    }, [selectedMessage, selectType]);
 
     const handleSendMessage = async () => {
         if (!messageText.trim() || !currentChannel) return;
 
-        if (editingMessage) {
-            await editMessage(editingMessage._id, messageText);
-            setEditingMessage(null);
+        if (selectType === "edit" && selectedMessage) {
+            await editMessage(selectedMessage._id, messageText);
+            clearSelectedMessage();
             setMessageText("");
             return;
         }
@@ -51,10 +47,10 @@ export function ChatInput() {
             channelId: currentChannel._id,
             text: messageText,
             timestamp: new Date().toISOString(),
-            replyTo: replyMessage?._id,
+            replyTo: selectType === "reply" ? selectedMessage?._id : undefined,
         });
         setMessageText("");
-        clearReplyMessage();
+        clearSelectedMessage();
         setShowEmojiPicker(false);
     };
 
@@ -63,13 +59,8 @@ export function ChatInput() {
             e.preventDefault();
             handleSendMessage();
         } else if (e.key === "Escape") {
-            if (editingMessage) {
-                setEditingMessage(null);
-                setMessageText("");
-            } else if (replyMessage) {
-                clearReplyMessage();
-                setMessageText("");
-            }
+            clearSelectedMessage();
+            setMessageText("");
         }
     };
 
@@ -79,33 +70,33 @@ export function ChatInput() {
 
     return (
         <div className="p-1 relative">
-            {replyMessage && !editingMessage && (
+            {selectedMessage && selectType === "reply" && (
                 <div className="bg-primary-foreground px-2 py-1 rounded mb-2 flex justify-between">
                     <div className="flex gap-1 items-center">
                         <ReplyIcon className="h-4 w-4" />
                         <p
                             className="overflow-hidden h-5 w-full text-muted-foreground"
                             style={{
-                                direction: cssDirection(replyMessage.text),
+                                direction: cssDirection(selectedMessage.text),
                             }}
                         >
-                            {replyMessage.text}
+                            {selectedMessage.text}
                         </p>
                     </div>
-                    <button onClick={clearReplyMessage} className="ml-2">
+                    <button onClick={clearSelectedMessage} className="ml-2">
                         <X className="h-4 w-4" />
                     </button>
                 </div>
             )}
 
-            {editingMessage && (
+            {selectedMessage && selectType === "edit" && (
                 <div className="bg-primary-foreground px-2 py-1 rounded mb-2 flex justify-between">
                     <div className="flex gap-1 items-center">
                         <p className="text-muted-foreground">Editing message</p>
                     </div>
                     <button
                         onClick={() => {
-                            setEditingMessage(null);
+                            clearSelectedMessage();
                             setMessageText("");
                         }}
                         className="ml-2"

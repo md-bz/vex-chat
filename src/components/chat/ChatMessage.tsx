@@ -4,11 +4,7 @@ import { Channel, Message, User } from "@/lib/types";
 import UserInfoPopup, { UserInfoPopupFromUsername } from "../UserInfoPopup";
 import parse, { DOMNode, domToReact } from "html-react-parser";
 import { useChannels, useMessages } from "@/lib/hooks";
-import {
-    useChatStore,
-    useReplyMessageStore,
-    useEditMessageStore,
-} from "@/lib/store";
+import { useChatStore, useSelectMessageStore } from "@/lib/store";
 import { Check, CheckCheck, EyeIcon, Reply, Edit } from "lucide-react";
 import JoinChannel from "../JoinChannel";
 import { cssDirection, formatTime } from "@/lib/utils";
@@ -29,8 +25,7 @@ export default function ChatMessage({
 }) {
     const { getChannelLastSeen } = useChannels();
     const { currentChannel } = useChatStore();
-    const { setReplyMessage } = useReplyMessageStore();
-    const { setEditingMessage } = useEditMessageStore();
+    const { setSelectedMessage } = useSelectMessageStore();
 
     const [offset, setOffset] = useState(0);
 
@@ -48,14 +43,14 @@ export default function ChatMessage({
             if (message.userId === me._id) {
                 eventData.event.stopPropagation();
                 setOffset(0);
-                setEditingMessage(message);
+                setSelectedMessage(message, "edit");
             }
         },
         onSwipedLeft: (eventData) => {
             if (message.userId !== me._id) {
                 eventData.event.stopPropagation();
                 setOffset(0);
-                setReplyMessage(message);
+                setSelectedMessage(message, "reply");
             }
         },
         delta: 10,

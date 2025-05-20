@@ -11,24 +11,21 @@ export const useChatStore = create<ChatStore>((set) => ({
     selectChannel: (channel) => set({ currentChannel: channel }),
 }));
 
-interface ReplyMessageStore {
-    replyMessage: Message | null;
-    setReplyMessage: (message: Message) => void;
-    clearReplyMessage: () => void;
+interface SelectMessageStore {
+    selectedMessage: Message | null;
+    selectType: "reply" | "edit" | null;
+    setSelectedMessage: (
+        message: Message | null,
+        type: "reply" | "edit"
+    ) => void;
+    clearSelectedMessage: () => void;
 }
 
-export const useReplyMessageStore = create<ReplyMessageStore>((set) => ({
-    replyMessage: null,
-    setReplyMessage: (message) => set({ replyMessage: message }),
-    clearReplyMessage: () => set({ replyMessage: null }),
-}));
-
-interface EditMessageStore {
-    editingMessage: Message | null;
-    setEditingMessage: (message: Message | null) => void;
-}
-
-export const useEditMessageStore = create<EditMessageStore>((set) => ({
-    editingMessage: null,
-    setEditingMessage: (message) => set({ editingMessage: message }),
+export const useSelectMessageStore = create<SelectMessageStore>((set) => ({
+    selectedMessage: null,
+    selectType: null,
+    setSelectedMessage: (message, type) =>
+        set({ selectedMessage: message, selectType: type }),
+    clearSelectedMessage: () =>
+        set({ selectedMessage: null, selectType: null }),
 }));
