@@ -31,13 +31,9 @@ export default function ChatMessage({
 
     const handlers = useSwipeable({
         onSwiping: (eventData) => {
-            if (message.userId === me._id) {
-                // For own messages, swipe right to edit
-                if (eventData.dir === "Right") setOffset(eventData.absX);
-            } else {
-                // For others' messages, swipe left to reply
-                if (eventData.dir === "Left") setOffset(eventData.absX);
-            }
+            if (eventData.dir === "Left") setOffset(eventData.deltaX);
+            if (eventData.dir === "Right" && message.userId === me._id)
+                setOffset(eventData.deltaX);
         },
         onSwipedRight: (eventData) => {
             if (message.userId === me._id) {
@@ -47,11 +43,9 @@ export default function ChatMessage({
             }
         },
         onSwipedLeft: (eventData) => {
-            if (message.userId !== me._id) {
-                eventData.event.stopPropagation();
-                setOffset(0);
-                setSelectedMessage(message, "reply");
-            }
+            eventData.event.stopPropagation();
+            setOffset(0);
+            setSelectedMessage(message, "reply");
         },
         delta: 10,
         preventScrollOnSwipe: true,
@@ -153,7 +147,7 @@ export default function ChatMessage({
                     data-message-id={message._id}
                     className={`flex ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
                     style={{
-                        transform: `translateX(${message.userId === me._id ? offset : -offset}px)`,
+                        transform: `translateX(${offset}px)`,
                     }}
                 >
                     <div
