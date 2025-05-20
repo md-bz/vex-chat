@@ -9,6 +9,7 @@ import { Check, CheckCheck, EyeIcon, Reply, Edit } from "lucide-react";
 import JoinChannel from "../JoinChannel";
 import { cssDirection, formatTime } from "@/lib/utils";
 import { useSwipeable } from "react-swipeable";
+import MessageMenu from "./MessageMenu";
 
 export default function ChatMessage({
     channelInfo,
@@ -135,112 +136,117 @@ export default function ChatMessage({
                 </div>
             )}
             <div>
-                <div
-                    {...handlers}
-                    ref={(node) => {
-                        if (node) {
-                            messageRefs.current.set(message._id, node);
-                        } else {
-                            messageRefs.current.delete(message._id);
-                        }
-                    }}
-                    data-message-id={message._id}
-                    className={`flex ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
-                    style={{
-                        transform: `translateX(${offset}px)`,
-                    }}
-                >
+                <MessageMenu me={me} message={message}>
                     <div
-                        className={`flex max-w-[70%] ${message.userId === me?._id ? "flex-row-reverse" : "flex-row"}`}
+                        {...handlers}
+                        ref={(node) => {
+                            if (node) {
+                                messageRefs.current.set(message._id, node);
+                            } else {
+                                messageRefs.current.delete(message._id);
+                            }
+                        }}
+                        data-message-id={message._id}
+                        className={`flex ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
+                        style={{
+                            transform: `translateX(${offset}px)`,
+                        }}
                     >
-                        {channelInfo?.type !== "private" &&
-                            message.userId !== me?._id && (
-                                <UserInfoPopup user={message.user as User}>
-                                    <Avatar
-                                        className={
-                                            message.userId === me?._id
-                                                ? "ml-2"
-                                                : "mr-2"
-                                        }
-                                    >
-                                        <AvatarFallback>
-                                            {message.userId
-                                                .substring(0, 2)
-                                                .toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </UserInfoPopup>
-                            )}
-
-                        <div>
+                        <div
+                            className={`flex max-w-[70%] ${message.userId === me?._id ? "flex-row-reverse" : "flex-row"}`}
+                        >
                             {channelInfo?.type !== "private" &&
                                 message.userId !== me?._id && (
-                                    <div className="flex items-baseline gap-2 text-start justify-start">
-                                        <p className={`text-sm font-medium`}>
-                                            {message.user?.name}
-                                        </p>
-                                    </div>
+                                    <UserInfoPopup user={message.user as User}>
+                                        <Avatar
+                                            className={
+                                                message.userId === me?._id
+                                                    ? "ml-2"
+                                                    : "mr-2"
+                                            }
+                                        >
+                                            <AvatarFallback>
+                                                {message.userId
+                                                    .substring(0, 2)
+                                                    .toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </UserInfoPopup>
                                 )}
-                            <div
-                                className={`mt-1 rounded-lg px-4 py-2 ${
-                                    message.userId === me?._id
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted"
-                                }`}
-                            >
-                                {message.repliedMessage && (
-                                    <div className="mb-2 text-xs border-l-2 pl-2 cursor-pointer hover:opacity-80">
-                                        <>
-                                            <div className="flex items-center gap-1 text-muted-foreground">
-                                                <Reply className="h-3 w-3" />
-                                                <span>Reply to</span>
-                                            </div>
-                                            <div
-                                                className="line-clamp-1"
-                                                style={{
-                                                    direction: cssDirection(
-                                                        message.text
-                                                    ),
-                                                }}
+
+                            <div>
+                                {channelInfo?.type !== "private" &&
+                                    message.userId !== me?._id && (
+                                        <div className="flex items-baseline gap-2 text-start justify-start">
+                                            <p
+                                                className={`text-sm font-medium`}
                                             >
-                                                {parse(
-                                                    message.repliedMessage
-                                                        .text || "",
-                                                    options
-                                                )}
-                                            </div>
-                                        </>
-                                    </div>
-                                )}
+                                                {message.user?.name}
+                                            </p>
+                                        </div>
+                                    )}
                                 <div
-                                    className="text-sm"
-                                    style={{
-                                        direction: cssDirection(message.text),
-                                    }}
+                                    className={`mt-1 rounded-lg px-4 py-2 ${
+                                        message.userId === me?._id
+                                            ? "bg-primary text-primary-foreground"
+                                            : "bg-muted"
+                                    }`}
                                 >
-                                    {parse(message.text, options)}
+                                    {message.repliedMessage && (
+                                        <div className="mb-2 text-xs border-l-2 pl-2 cursor-pointer hover:opacity-80">
+                                            <>
+                                                <div className="flex items-center gap-1 text-muted-foreground">
+                                                    <Reply className="h-3 w-3" />
+                                                    <span>Reply to</span>
+                                                </div>
+                                                <div
+                                                    className="line-clamp-1"
+                                                    style={{
+                                                        direction: cssDirection(
+                                                            message.text
+                                                        ),
+                                                    }}
+                                                >
+                                                    {parse(
+                                                        message.repliedMessage
+                                                            .text || "",
+                                                        options
+                                                    )}
+                                                </div>
+                                            </>
+                                        </div>
+                                    )}
+                                    <div
+                                        className="text-sm"
+                                        style={{
+                                            direction: cssDirection(
+                                                message.text
+                                            ),
+                                        }}
+                                    >
+                                        {parse(message.text, options)}
+                                    </div>
                                 </div>
-                            </div>
-                            <div
-                                className={`text-xs text-muted-foreground flex items-center gap-1 ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
-                            >
-                                {getMessageStatus(message)}
-                                {message.editedAt && (
-                                    <span className="text-muted-foreground">
-                                        edited
-                                    </span>
-                                )}
-                                {new Date(message.timestamp).toLocaleTimeString(
-                                    [],
-                                    {
+                                <div
+                                    className={`text-xs text-muted-foreground flex items-center gap-1 ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
+                                >
+                                    {getMessageStatus(message)}
+                                    {message.editedAt && (
+                                        <span className="text-muted-foreground">
+                                            edited
+                                        </span>
+                                    )}
+                                    {new Date(
+                                        message.timestamp
+                                    ).toLocaleTimeString([], {
                                         hour: "2-digit",
                                         minute: "2-digit",
-                                    }
-                                )}
+                                    })}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </MessageMenu>
             </div>
         </>
     );

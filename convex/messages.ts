@@ -146,3 +146,28 @@ export const edit = mutation({
         return args.messageId;
     },
 });
+
+export const deleteMessage = mutation({
+    args: {
+        messageId: v.id("messages"),
+    },
+    handler: async (ctx, args) => {
+        const message = await ctx.db.get(args.messageId);
+        if (!message) {
+            throw new ConvexError("Message not found");
+        }
+
+        const user = await getUser(ctx);
+        if (message.userId !== user._id) {
+            throw new ConvexError("You can only delete your own messages");
+        }
+
+        const isMember = await isUserMemberOfChannel(ctx, message.channelId);
+        if (!isMember) {
+            throw new ConvexError("Not a member of this channel");
+        }
+
+        await ctx.db.delete(args.messageId);
+        return args.messageId;
+    },
+});
