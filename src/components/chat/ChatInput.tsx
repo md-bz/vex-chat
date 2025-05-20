@@ -21,8 +21,9 @@ export function ChatInput() {
     // Update input text when editing message changes
     useEffect(() => {
         if (selectType === "edit" && selectedMessage) {
-            setMessageText(selectedMessage.text);
+            return setMessageText(selectedMessage.text);
         }
+        setMessageText("");
     }, [selectedMessage, selectType]);
 
     const handleSendMessage = async () => {
