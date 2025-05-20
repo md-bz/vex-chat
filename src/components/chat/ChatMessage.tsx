@@ -4,8 +4,12 @@ import { Channel, Message, User } from "@/lib/types";
 import UserInfoPopup, { UserInfoPopupFromUsername } from "../UserInfoPopup";
 import parse, { DOMNode, domToReact } from "html-react-parser";
 import { useChannels, useMessages } from "@/lib/hooks";
-import { useChatStore, useReplyMessageStore } from "@/lib/store";
-import { Check, CheckCheck, EyeIcon, Reply } from "lucide-react";
+import {
+    useChatStore,
+    useReplyMessageStore,
+    useEditMessageStore,
+} from "@/lib/store";
+import { Check, CheckCheck, EyeIcon, Reply, Edit } from "lucide-react";
 import JoinChannel from "../JoinChannel";
 import { cssDirection, formatTime } from "@/lib/utils";
 import { useSwipeable } from "react-swipeable";
@@ -25,19 +29,34 @@ export default function ChatMessage({
 }) {
     const { getChannelLastSeen } = useChannels();
     const { currentChannel } = useChatStore();
+    const { setReplyMessage } = useReplyMessageStore();
+    const { setEditingMessage } = useEditMessageStore();
 
     const [offset, setOffset] = useState(0);
-    const { setReplyMessage } = useReplyMessageStore();
 
     const handlers = useSwipeable({
         onSwiping: (eventData) => {
-            if (eventData.dir === "Left") setOffset(eventData.absX);
+            if (message.userId === me._id) {
+                // For own messages, swipe right to edit
+                if (eventData.dir === "Right") setOffset(eventData.absX);
+            } else {
+                // For others' messages, swipe left to reply
+                if (eventData.dir === "Left") setOffset(eventData.absX);
+            }
+        },
+        onSwipedRight: (eventData) => {
+            if (message.userId === me._id) {
+                eventData.event.stopPropagation();
+                setOffset(0);
+                setEditingMessage(message);
+            }
         },
         onSwipedLeft: (eventData) => {
-            eventData.event.stopPropagation();
-            setOffset(0);
-            setReplyMessage(message);
-            console.log(eventData);
+            if (message.userId !== me._id) {
+                eventData.event.stopPropagation();
+                setOffset(0);
+                setReplyMessage(message);
+            }
         },
         delta: 10,
         preventScrollOnSwipe: true,
@@ -138,7 +157,9 @@ export default function ChatMessage({
                     }}
                     data-message-id={message._id}
                     className={`flex ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
-                    style={{ transform: `translateX(-${offset}px)` }}
+                    style={{
+                        transform: `translateX(${message.userId === me._id ? offset : -offset}px)`,
+                    }}
                 >
                     <div
                         className={`flex max-w-[70%] ${message.userId === me?._id ? "flex-row-reverse" : "flex-row"}`}
@@ -215,6 +236,11 @@ export default function ChatMessage({
                                 className={`text-xs text-muted-foreground flex items-center gap-1 ${message.userId === me?._id ? "justify-end" : "justify-start"}`}
                             >
                                 {getMessageStatus(message)}
+                                {message.editedAt && (
+                                    <span className="text-muted-foreground">
+                                        edited
+                                    </span>
+                                )}
                                 {new Date(message.timestamp).toLocaleTimeString(
                                     [],
                                     {

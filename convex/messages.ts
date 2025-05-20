@@ -112,3 +112,37 @@ export const send = mutation({
         return id;
     },
 });
+
+export const edit = mutation({
+    args: {
+        messageId: v.id("messages"),
+        text: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const message = await ctx.db.get(args.messageId);
+        if (!message) {
+            throw new ConvexError("Message not found");
+        }
+
+        const user = await getUser(ctx);
+        if (message.userId !== user._id) {
+            throw new ConvexError("You can only edit your own messages");
+        }
+
+        const isMember = await isUserMemberOfChannel(ctx, message.channelId);
+        if (!isMember) {
+            throw new ConvexError("Not a member of this channel");
+        }
+
+        await ctx.db.patch(args.messageId, {
+            text: xss(Autolinker.link(args.text), {
+                whiteList: {
+                    a: ["href", "title", "target"],
+                },
+            }),
+            editedAt: Date.now(),
+        });
+
+        return args.messageId;
+    },
+});

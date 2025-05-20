@@ -1,11 +1,14 @@
-import { useChatStore, useReplyMessageStore } from "@/lib/store";
+import {
+    useChatStore,
+    useReplyMessageStore,
+    useEditMessageStore,
+} from "@/lib/store";
 import { Input } from "../ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useChannels, useMessages } from "@/lib/hooks";
 import { Button } from "../ui/button";
 import { ReplyIcon, SendIcon, SmileIcon, X } from "lucide-react";
 import EmojiPicker, { Theme } from "emoji-picker-react";
-import { direction } from "direction";
 import { cssDirection } from "@/lib/utils";
 
 export function ChatInput() {
@@ -13,11 +16,29 @@ export function ChatInput() {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const { currentChannel } = useChatStore();
     const { createChannel } = useChannels();
-    const { sendMessage } = useMessages(currentChannel?._id || null);
+    const { sendMessage, editMessage } = useMessages(
+        currentChannel?._id || null
+    );
     const { replyMessage, clearReplyMessage } = useReplyMessageStore();
+    const { editingMessage, setEditingMessage } = useEditMessageStore();
+
+    // Update input text when editing message changes
+    useEffect(() => {
+        if (editingMessage) {
+            setMessageText(editingMessage.text);
+        }
+    }, [editingMessage]);
 
     const handleSendMessage = async () => {
         if (!messageText.trim() || !currentChannel) return;
+
+        if (editingMessage) {
+            await editMessage(editingMessage._id, messageText);
+            setEditingMessage(null);
+            setMessageText("");
+            return;
+        }
+
         if (currentChannel._id === null) {
             if (!currentChannel.userId) return;
             const id = await createChannel(currentChannel.name, "private", [
@@ -41,6 +62,14 @@ export function ChatInput() {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage();
+        } else if (e.key === "Escape") {
+            if (editingMessage) {
+                setEditingMessage(null);
+                setMessageText("");
+            } else if (replyMessage) {
+                clearReplyMessage();
+                setMessageText("");
+            }
         }
     };
 
@@ -50,7 +79,7 @@ export function ChatInput() {
 
     return (
         <div className="p-1 relative">
-            {replyMessage && (
+            {replyMessage && !editingMessage && (
                 <div className="bg-primary-foreground px-2 py-1 rounded mb-2 flex justify-between">
                     <div className="flex gap-1 items-center">
                         <ReplyIcon className="h-4 w-4" />
@@ -64,6 +93,23 @@ export function ChatInput() {
                         </p>
                     </div>
                     <button onClick={clearReplyMessage} className="ml-2">
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+            )}
+
+            {editingMessage && (
+                <div className="bg-primary-foreground px-2 py-1 rounded mb-2 flex justify-between">
+                    <div className="flex gap-1 items-center">
+                        <p className="text-muted-foreground">Editing message</p>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setEditingMessage(null);
+                            setMessageText("");
+                        }}
+                        className="ml-2"
+                    >
                         <X className="h-4 w-4" />
                     </button>
                 </div>

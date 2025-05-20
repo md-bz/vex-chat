@@ -7,6 +7,7 @@ export interface Message {
     userId: Id<"users">;
     text: string;
     timestamp: number;
+    editedAt?: number;
     user: User | null;
     replyTo?: Id<"messages">;
     repliedMessage:

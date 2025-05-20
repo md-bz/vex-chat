@@ -22,3 +22,13 @@ export const useReplyMessageStore = create<ReplyMessageStore>((set) => ({
     setReplyMessage: (message) => set({ replyMessage: message }),
     clearReplyMessage: () => set({ replyMessage: null }),
 }));
+
+interface EditMessageStore {
+    editingMessage: Message | null;
+    setEditingMessage: (message: Message | null) => void;
+}
+
+export const useEditMessageStore = create<EditMessageStore>((set) => ({
+    editingMessage: null,
+    setEditingMessage: (message) => set({ editingMessage: message }),
+}));

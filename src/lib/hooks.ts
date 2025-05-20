@@ -17,6 +17,7 @@ export function useMessages(channelId: string | null) {
 
     // Get the send message mutation
     const sendMessageMutation = useMutation(api.messages.send);
+    const editMessageMutation = useMutation(api.messages.edit);
 
     const sendMessage = async (message: {
         channelId: string;
@@ -33,11 +34,19 @@ export function useMessages(channelId: string | null) {
         });
     };
 
+    const editMessage = async (messageId: Id<"messages">, text: string) => {
+        await editMessageMutation({
+            messageId,
+            text,
+        });
+    };
+
     return {
         messages: results.toReversed(),
         messagesStatus: status,
         loadMoreMessages: loadMore,
         sendMessage,
+        editMessage,
     };
 }
 
