@@ -217,7 +217,7 @@ export default function ChatMessage({
                                         </div>
                                     )}
                                     <div
-                                        className="text-sm break-words max-w-[60vw]"
+                                        className="text-sm break-words whitespace-pre-line max-w-[60vw]"
                                         style={{
                                             direction: cssDirection(
                                                 message.text

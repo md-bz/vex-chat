@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { ReplyIcon, SendIcon, SmileIcon, X } from "lucide-react";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { cssDirection } from "@/lib/utils";
+import { Textarea } from "../ui/textarea";
 
 export function ChatInput() {
     const [messageText, setMessageText] = useState("");
@@ -27,10 +28,11 @@ export function ChatInput() {
     }, [selectedMessage, selectType]);
 
     const handleSendMessage = async () => {
-        if (!messageText.trim() || !currentChannel) return;
+        if (!messageText || !currentChannel) return;
 
+        const trimmedMessageText = messageText;
         if (selectType === "edit" && selectedMessage) {
-            await editMessage(selectedMessage._id, messageText);
+            await editMessage(selectedMessage._id, trimmedMessageText);
             clearSelectedMessage();
             setMessageText("");
             return;
@@ -46,7 +48,7 @@ export function ChatInput() {
 
         sendMessage({
             channelId: currentChannel._id,
-            text: messageText,
+            text: trimmedMessageText,
             timestamp: new Date().toISOString(),
             replyTo: selectType === "reply" ? selectedMessage?._id : undefined,
         });
@@ -56,9 +58,11 @@ export function ChatInput() {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === "Enter" && !e.ctrlKey) {
             e.preventDefault();
             handleSendMessage();
+        } else if (e.key === "Enter" && e.ctrlKey) {
+            setMessageText((prev) => prev + "\n");
         } else if (e.key === "Escape") {
             clearSelectedMessage();
             setMessageText("");
@@ -117,7 +121,7 @@ export function ChatInput() {
                     <SmileIcon className="h-5 w-5" />
                 </Button>
 
-                <Input
+                <Textarea
                     placeholder={`Message ${currentChannel?.name}...`}
                     style={{
                         direction:
@@ -126,7 +130,7 @@ export function ChatInput() {
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="flex-1"
+                    className="flex-1 resize-none"
                 />
 
                 <Button
