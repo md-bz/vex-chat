@@ -76,7 +76,7 @@ export function ChatInput() {
                     <div className="flex gap-1 items-center">
                         <ReplyIcon className="h-4 w-4" />
                         <p
-                            className="overflow-hidden h-5 w-full text-muted-foreground"
+                            className="overflow-hidden h-5 w-full text-muted-foreground break-words md:max-w-[calc(90vw-250px)] max-w-[calc(90vw-2rem)]"
                             style={{
                                 direction: cssDirection(selectedMessage.text),
                             }}
