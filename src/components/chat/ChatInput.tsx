@@ -1,6 +1,6 @@
+"use client";
 import { useChatStore, useSelectMessageStore } from "@/lib/store";
-import { Input } from "../ui/input";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useChannels, useMessages } from "@/lib/hooks";
 import { Button } from "../ui/button";
 import { ReplyIcon, SendIcon, SmileIcon, X } from "lucide-react";
@@ -18,6 +18,20 @@ export function ChatInput() {
     );
     const { selectedMessage, selectType, clearSelectedMessage } =
         useSelectMessageStore();
+
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const inputMaxHeight = 30; //based on shadcn units
+    useEffect(() => {
+        if (!textareaRef.current) return;
+
+        if (messageText === "") {
+            textareaRef.current.style.height = "2.5em";
+        }
+        textareaRef.current.style.height = `${Math.min(
+            textareaRef.current.scrollHeight,
+            inputMaxHeight * 4
+        )}px`;
+    }, [messageText]);
 
     // Update input text when editing message changes
     useEffect(() => {
@@ -122,6 +136,7 @@ export function ChatInput() {
                 </Button>
 
                 <Textarea
+                    ref={textareaRef}
                     placeholder={`Message ${currentChannel?.name}...`}
                     style={{
                         direction:
@@ -130,7 +145,7 @@ export function ChatInput() {
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="flex-1 resize-none"
+                    className={`flex-1 resize-none max-h-${inputMaxHeight}`}
                 />
 
                 <Button
