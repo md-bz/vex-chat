@@ -43,6 +43,7 @@ export default function MessageMenu({
 
     const handleDelete = () => {
         deleteMessage(message._id);
+        setOpen(false);
     };
 
     function DeleteConfirmation() {
