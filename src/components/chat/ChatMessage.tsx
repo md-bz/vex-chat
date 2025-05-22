@@ -3,9 +3,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Channel, Message, User } from "@/lib/types";
 import UserInfoPopup, { UserInfoPopupFromUsername } from "../UserInfoPopup";
 import parse, { DOMNode, domToReact } from "html-react-parser";
-import { useChannels, useMessages } from "@/lib/hooks";
+import { useChannels } from "@/lib/hooks";
 import { useChatStore, useSelectMessageStore } from "@/lib/store";
-import { Check, CheckCheck, EyeIcon, Reply, Edit } from "lucide-react";
+import { Check, CheckCheck, EyeIcon, Reply } from "lucide-react";
 import JoinChannel from "../JoinChannel";
 import { cssDirection, formatTime } from "@/lib/utils";
 import { useSwipeable } from "react-swipeable";
@@ -33,15 +33,6 @@ export default function ChatMessage({
     const handlers = useSwipeable({
         onSwiping: (eventData) => {
             if (eventData.dir === "Left") setOffset(eventData.deltaX);
-            if (eventData.dir === "Right" && message.userId === me._id)
-                setOffset(eventData.deltaX);
-        },
-        onSwipedRight: (eventData) => {
-            if (message.userId === me._id) {
-                eventData.event.stopPropagation();
-                setOffset(0);
-                setSelectedMessage(message, "edit");
-            }
         },
         onSwipedLeft: (eventData) => {
             eventData.event.stopPropagation();
