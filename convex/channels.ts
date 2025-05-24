@@ -135,13 +135,7 @@ export const get = query({
                           if (contact) {
                               m.name = contact.name;
                           }
-
-                          return {
-                              _id: m._id,
-                              name: m.name,
-                              imageUrl: m.imageUrl,
-                              lastSeen: m.lastSeen,
-                          };
+                          return getSanitizedUser(m);
                       })
                   )
               )
