@@ -54,10 +54,12 @@ export function ChatInput() {
 
         if (currentChannel._id === null) {
             if (!currentChannel.userId) return;
-            const id = await createChannel(currentChannel.name, "private", [
-                currentChannel.userId,
-            ]);
-            currentChannel._id = id;
+            const newChannel = await createChannel(
+                currentChannel.name,
+                "private",
+                [currentChannel.userId]
+            );
+            currentChannel._id = newChannel._id;
         }
 
         sendMessage({

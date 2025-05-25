@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useChannels } from "@/lib/hooks";
 import { Id } from "../../convex/_generated/dataModel";
+import { useChatStore } from "@/lib/store";
 
 interface CreateChannelDialogProps {
     type: "channel" | "group";
@@ -26,11 +27,15 @@ export default function CreateChannelDialog({
 }: CreateChannelDialogProps) {
     const [name, setName] = useState("");
     const { createChannel } = useChannels();
+    const { selectChannel } = useChatStore();
 
     const handleCreate = async () => {
         if (!name.trim()) return;
 
-        await createChannel(name, type, memberIds);
+        const newChannel = await createChannel(name, type, memberIds);
+        //todo handle error and show error message
+        if (!newChannel) return;
+        selectChannel(newChannel);
         onClose();
     };
 

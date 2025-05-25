@@ -198,7 +198,13 @@ export const create = mutation({
                 user._id,
                 args.members[0]
             );
-            if (sharedPrivate) return sharedPrivate?._id;
+            if (!sharedPrivate) {
+                console.error(
+                    `Error creating channel:\n args: ${args} user: ${user}`
+                );
+                throw new ConvexError("Something went wrong");
+            }
+            if (sharedPrivate) return sharedPrivate;
         }
 
         const id = await ctx.db.insert("channels", {
@@ -251,7 +257,14 @@ export const create = mutation({
             timestamp: createdAt,
         });
 
-        return id;
+        const newlyCreatedChannel = await ctx.db.get(id);
+        if (!newlyCreatedChannel) {
+            console.error(
+                `Error creating channel:\n args: ${args} user: ${user}`
+            );
+            throw new ConvexError("Something went wrong");
+        }
+        return newlyCreatedChannel;
     },
 });
 
