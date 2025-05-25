@@ -187,6 +187,7 @@ export const create = mutation({
 
         const type = args.type || "private";
 
+        const createdAt = Date.now();
         if (type === "private") {
             if (!args.members || args.members.length !== 1) {
                 throw new ConvexError("Private channels requires a member");
@@ -204,7 +205,7 @@ export const create = mutation({
             name: args.name,
             type,
             createdBy: user._id,
-            createdAt: Date.now(),
+            createdAt,
         });
 
         if (type !== "private") {
@@ -212,7 +213,7 @@ export const create = mutation({
             await ctx.db.insert("channelLinks", {
                 channelId: id,
                 link,
-                createdAt: Date.now(),
+                createdAt,
                 createdBy: user._id,
             });
         }
@@ -243,6 +244,13 @@ export const create = mutation({
                 privateMessageKey,
             });
         }
+        await ctx.db.insert("messages", {
+            channelId: id,
+            text: "Chat Created",
+            userId: user._id,
+            timestamp: createdAt,
+        });
+
         return id;
     },
 });
