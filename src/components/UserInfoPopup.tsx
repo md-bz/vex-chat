@@ -23,7 +23,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, XIcon } from "lucide-react";
+import { Divide, MoreVertical, XIcon } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -37,7 +37,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BackIcon } from "./ui/back-icon";
-import { toast } from "sonner";
+import { Spinner } from "./ui/loading";
+
+interface UserInfoPopupBaseProps {
+    user: User;
+    children?: React.ReactNode;
+    open: boolean;
+    setOpen: (open: boolean) => void;
+}
 
 interface UserInfoProps {
     user: User;
@@ -52,23 +59,51 @@ export function UserInfoPopupFromUsername({
     children?: React.ReactNode;
 }) {
     const { getUserByUsername } = useUsers();
-    const user = getUserByUsername(username);
-    if (!user)
-        return (
-            <>
-                <div
-                    className="hover:cursor-pointer"
-                    onClick={() => toast.warning("User not found")}
-                >
-                    {children}
-                </div>
-            </>
-        );
-    return <UserInfoPopup user={user} children={children} />;
+    const [open, setOpen] = useState(false);
+
+    const user = getUserByUsername(open ? username : undefined);
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild className="hover:cursor-pointer">
+                {children}
+            </DialogTrigger>
+            <DialogContent>
+                <DialogTitle>
+                    {user === undefined && <Spinner />}
+                    {user === null && (
+                        <p className="text-center">User not found</p>
+                    )}
+                    {user && (
+                        <UserInfoPopupBase
+                            user={user}
+                            open={open}
+                            setOpen={setOpen}
+                        >
+                            {children}
+                        </UserInfoPopupBase>
+                    )}
+                </DialogTitle>
+            </DialogContent>
+        </Dialog>
+    );
 }
 
 export default function UserInfoPopup({ user, children }: UserInfoProps) {
     const [open, setOpen] = useState(false);
+    return (
+        <UserInfoPopupBase user={user} open={open} setOpen={setOpen}>
+            {children}
+        </UserInfoPopupBase>
+    );
+}
+
+function UserInfoPopupBase({
+    user,
+    children,
+    open,
+    setOpen,
+}: UserInfoPopupBaseProps) {
     const [addContactOpen, setAddContactOpen] = useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const { selectChannel } = useChatStore();

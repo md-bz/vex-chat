@@ -127,9 +127,11 @@ export function useUsers() {
     const updateLastSeenMutation = useMutation(
         api.users.updateLastSeenMutation
     );
-    const getUserByUsername = (username: string) => {
+    const getUserByUsername = (username?: string) => {
         try {
-            return useQuery(api.users.getByUsername, { username });
+            return useQuery(api.users.getByUsername, {
+                username: username || "skip",
+            });
         } catch (error) {
             return null;
         }
