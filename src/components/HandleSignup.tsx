@@ -15,15 +15,15 @@ import {
     CardTitle,
 } from "./ui/card";
 
-export default function HandleUsername() {
+export default function HandleSignup() {
     return (
         <Authenticated>
-            <HandleUsernameMain />
+            <HandleSignupMain />
         </Authenticated>
     );
 }
 
-function HandleUsernameMain() {
+function HandleSignupMain() {
     const { createUser, getMe } = useUsers();
     const router = useRouter();
     const [name, setName] = useState("");

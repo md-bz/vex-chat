@@ -1,4 +1,4 @@
-import HandleUsername from "@/components/HandleUsername";
+import HandleSignup from "@/components/HandleSignup";
 import { SignedIn, SignIn } from "@clerk/nextjs";
 import { shadesOfPurple } from "@clerk/themes";
 
@@ -11,7 +11,7 @@ export default function Home() {
                 appearance={{ baseTheme: shadesOfPurple }}
             />
             <SignedIn>
-                <HandleUsername />
+                <HandleSignup />
             </SignedIn>
         </main>
     );
