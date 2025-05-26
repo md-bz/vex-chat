@@ -198,12 +198,6 @@ export const create = mutation({
                 user._id,
                 args.members[0]
             );
-            if (!sharedPrivate) {
-                console.error(
-                    `Error creating channel:\n args: ${args} user: ${user}`
-                );
-                throw new ConvexError("Something went wrong");
-            }
             if (sharedPrivate) return sharedPrivate;
         }
 
@@ -260,7 +254,9 @@ export const create = mutation({
         const newlyCreatedChannel = await ctx.db.get(id);
         if (!newlyCreatedChannel) {
             console.error(
-                `Error creating channel:\n args: ${args} user: ${user}`
+                `Error creating channel:\n args: ${JSON.stringify(
+                    args
+                )} user: ${JSON.stringify(user)}`
             );
             throw new ConvexError("Something went wrong");
         }
