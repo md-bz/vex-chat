@@ -57,7 +57,15 @@ export const getAll = query({
                         .filter((q) => q.neq(q.field("userId"), user._id))
                         .first();
 
-                    if (!otherMember) return null;
+                    // this happens when you message yourself (saved message)
+                    if (!otherMember)
+                        return {
+                            ...channel,
+                            user: getSanitizedUser(user),
+                            messages,
+                            channelLastSeen,
+                        };
+
                     const otherUser = await ctx.db.get(otherMember.userId);
 
                     if (!otherUser) return null;
@@ -243,6 +251,15 @@ export const create = mutation({
                 isAdmin: member === user._id ? true : false,
                 privateMessageKey,
             });
+
+            // this happens when you create chat with yourself (saved message)
+            if (
+                type === "private" &&
+                member === user._id &&
+                //@ts-ignore the members[0] is being checked in if condition
+                args.members[0] === user._id
+            )
+                break;
         }
         await ctx.db.insert("messages", {
             channelId: id,
