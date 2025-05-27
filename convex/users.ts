@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, MutationCtx, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { getUser } from "./auth";
 import {
@@ -7,6 +7,19 @@ import {
     updateLastSeen,
 } from "./helper";
 import { Id } from "./_generated/dataModel";
+
+const normalizeUsername = (username: string) =>
+    username?.replace(" ", "_").replace("-", "_").toLowerCase();
+
+const checkUsernameExistence = async (username: string, ctx: MutationCtx) => {
+    const result = await ctx.db
+        .query("users")
+        .filter((q) => q.eq(q.field("username"), username))
+        .first();
+    if (result) {
+        throw new ConvexError("Username already taken");
+    }
+};
 
 export const getAll = query({
     handler: async (ctx) => {
@@ -78,19 +91,10 @@ export const create = mutation({
             return existing._id;
         }
 
-        const username = args.username
-            ?.replace(" ", "_")
-            .replace(" ", "-")
-            .toLowerCase();
-
-        if (username) {
-            const result = await ctx.db
-                .query("users")
-                .filter((q) => q.eq(q.field("username"), username))
-                .first();
-            if (result) {
-                throw new ConvexError("Username already taken");
-            }
+        let username;
+        if (args.username) {
+            username = normalizeUsername(args.username);
+            await checkUsernameExistence(username, ctx);
         }
 
         const id = await ctx.db.insert("users", {
@@ -220,18 +224,8 @@ export const updateUserPreferences = mutation({
 
         // If username is being updated, check if it's already taken
         if (args.username) {
-            const username = args.username
-                .replace(" ", "_")
-                .replace(" ", "-")
-                .toLowerCase();
-            const existingUser = await ctx.db
-                .query("users")
-                .withIndex("by_username", (q) => q.eq("username", username))
-                .first();
-
-            if (existingUser && existingUser._id !== user._id) {
-                throw new ConvexError("Username already taken");
-            }
+            const username = normalizeUsername(args.username);
+            await checkUsernameExistence(username, ctx);
             args.username = username;
         }
 
