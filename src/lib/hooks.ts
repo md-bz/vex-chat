@@ -127,6 +127,18 @@ export function useUsers() {
     const updateLastSeenMutation = useMutation(
         api.users.updateLastSeenMutation
     );
+    const updateUserPreferencesMutation = useMutation(
+        api.users.updateUserPreferences
+    );
+
+    const updateUserPreferences = (
+        name?: string,
+        username?: string,
+        showLastSeen?: boolean
+    ) => {
+        return updateUserPreferencesMutation({ name, username, showLastSeen });
+    };
+
     const getUserByUsername = (username?: string) => {
         try {
             return useQuery(api.users.getByUsername, {
@@ -167,6 +179,7 @@ export function useUsers() {
         searchUsers,
         getUserById,
         getUserByUsername,
+        updateUserPreferences,
     };
 }
 

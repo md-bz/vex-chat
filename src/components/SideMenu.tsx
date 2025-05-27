@@ -13,6 +13,7 @@ import { useClerk } from "@clerk/nextjs";
 import { useUsers } from "@/lib/hooks";
 import { useState } from "react";
 import CreateChannelDialog from "./CreateChannelDialog";
+import { SettingsDialog } from "./SettingsDialog";
 
 export function SideMenu() {
     const [open, setOpen] = useState(false);
@@ -54,6 +55,9 @@ export function SideMenu() {
                         >
                             Create Group
                         </Button>
+                        <SettingsDialog>
+                            <Button variant="ghost">Settings</Button>
+                        </SettingsDialog>
                     </div>
                     <div className="flex flex-col">
                         <Button

@@ -208,3 +208,34 @@ export const migrate = mutation({
         }
     },
 });
+
+export const updateUserPreferences = mutation({
+    args: {
+        name: v.optional(v.string()),
+        username: v.optional(v.string()),
+        showLastSeen: v.optional(v.boolean()),
+    },
+    handler: async (ctx, args) => {
+        const user = await getUser(ctx);
+
+        // If username is being updated, check if it's already taken
+        if (args.username) {
+            const username = args.username
+                .replace(" ", "_")
+                .replace(" ", "-")
+                .toLowerCase();
+            const existingUser = await ctx.db
+                .query("users")
+                .withIndex("by_username", (q) => q.eq("username", username))
+                .first();
+
+            if (existingUser && existingUser._id !== user._id) {
+                throw new ConvexError("Username already taken");
+            }
+            args.username = username;
+        }
+
+        await ctx.db.patch(user._id, args);
+        return await ctx.db.get(user._id);
+    },
+});
