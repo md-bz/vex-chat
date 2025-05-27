@@ -185,34 +185,6 @@ export const search = query({
     },
 });
 
-export const migrate = mutation({
-    args: {},
-    handler: async (ctx) => {
-        const channels = process.env.NEW_MEMBER_CHANNELS_IDS;
-        if (!channels) return;
-
-        const channelIds = channels.split(".") as Id<"channels">[];
-
-        const users = await ctx.db.query("users").collect();
-
-        for (const user of users) {
-            for (const channelId of channelIds) {
-                const isMember = await ctx.db
-                    .query("channelMembers")
-                    .withIndex("by_userId", (q) => q.eq("userId", user._id))
-                    .filter((q) => q.eq(q.field("channelId"), channelId))
-                    .first();
-                if (isMember) continue;
-                await ctx.db.insert("channelMembers", {
-                    channelId: channelId,
-                    userId: user._id,
-                    isAdmin: false,
-                });
-            }
-        }
-    },
-});
-
 export const updateUserPreferences = mutation({
     args: {
         name: v.optional(v.string()),

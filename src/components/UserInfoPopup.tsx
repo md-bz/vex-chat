@@ -23,7 +23,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Divide, MoreVertical, XIcon } from "lucide-react";
+import { MoreVertical, XIcon } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,

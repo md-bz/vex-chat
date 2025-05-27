@@ -1,16 +1,6 @@
 import { Doc, Id } from "./_generated/dataModel";
 import { MutationCtx, QueryCtx } from "./_generated/server";
 
-export async function migrate(ctx: MutationCtx) {
-    const users = await ctx.db.query("users").collect();
-    for (const user of users) {
-        ctx.db.patch(user._id, {
-            lastSeen: user.lastSeen || Date.now(),
-            showLastSeen: user.showLastSeen || true,
-        });
-    }
-}
-
 export function formatLastSeen(timestamp: number) {
     const now = new Date();
     const date = new Date(timestamp);

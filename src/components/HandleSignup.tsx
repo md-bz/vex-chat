@@ -106,7 +106,7 @@ function HandleSignupMain() {
                 <Button
                     onClick={handleJoin}
                     className="w-full"
-                    // disabled={!name.trim() || isLoading}
+                    disabled={!name.trim() || isLoading}
                 >
                     {isLoading ? "Joining..." : "Join Chat"}
                 </Button>
