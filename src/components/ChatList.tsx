@@ -79,7 +79,7 @@ export const ChatList = () => {
 
             {tabs.map((tab) => (
                 <TabsContent key={tab.id} value={tab.id}>
-                    <ScrollArea className="h-[calc(100vh-200px)] space-y-1 overflow-y-scroll ">
+                    <ScrollArea className="h-[calc(100vh-200px)] not-sm:h-[calc(100vh-200px)]  space-y-1 overflow-y-scroll ">
                         {tab.items === undefined ? (
                             <>
                                 {[...Array(8)].map((_, i) => (

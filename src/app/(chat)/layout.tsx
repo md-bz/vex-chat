@@ -13,7 +13,7 @@ export default function ChatLayout({
     const { currentChannel } = useChatStore();
 
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen-svh">
             <Toaster position="bottom-center" visibleToasts={1} />
             <Authenticated>
                 <div

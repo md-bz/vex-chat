@@ -51,7 +51,7 @@ export function Spinner({
 
 export function Loading() {
     return (
-        <div className="flex h-screen items-center justify-center">
+        <div className="flex h-screen-svh items-center justify-center">
             <Spinner />
         </div>
     );

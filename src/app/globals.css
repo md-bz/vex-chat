@@ -120,3 +120,6 @@
         @apply bg-background text-foreground;
     }
 }
+.h-screen-svh {
+    @apply h-screen not-md:h-svh;
+}
