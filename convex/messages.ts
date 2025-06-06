@@ -10,6 +10,7 @@ import { paginationOptsValidator } from "convex/server";
 export const list = query({
     args: {
         channelId: v.id("channels"),
+        lastMessageCreationTime: v.optional(v.number()),
         paginationOpts: paginationOptsValidator,
     },
     handler: async (ctx, args) => {
@@ -25,7 +26,11 @@ export const list = query({
 
         const messages = await ctx.db
             .query("messages")
-            .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
+            .withIndex("by_channel", (q) =>
+                q
+                    .eq("channelId", args.channelId)
+                    .gt("_creationTime", args.lastMessageCreationTime || 0)
+            )
             .order("desc")
             .paginate(args.paginationOpts);
 

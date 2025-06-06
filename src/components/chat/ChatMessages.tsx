@@ -4,7 +4,7 @@ import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 import { useChatStore } from "@/lib/store";
 import { formatTime } from "@/lib/utils";
-import { useChannels, useMessages } from "@/lib/hooks";
+import { useChannels, useGetMessages, useMessages } from "@/lib/hooks";
 import { useDebouncedCallback } from "use-debounce";
 import { Id } from "../../../convex/_generated/dataModel";
 import { Channel, User } from "@/lib/types";
@@ -21,7 +21,7 @@ export function ChatMessages({
 }) {
     const { currentChannel } = useChatStore();
 
-    const { loadMoreMessages, messagesStatus, messages } = useMessages(
+    const { loadMoreMessages, messagesStatus, messages } = useGetMessages(
         currentChannel?._id || null
     );
     const { seenChannel } = useChannels();

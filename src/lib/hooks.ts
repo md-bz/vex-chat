@@ -2,18 +2,72 @@ import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import { db } from "./db";
+import { Message } from "./types";
 
-export function useMessages(channelId: string | null) {
-    // Convert string ID to Convex ID if it exists
-    const convexChannelId = channelId ? (channelId as Id<"channels">) : null;
+export function useGetMessages(channelId: Id<"channels"> | null) {
+    const [calledLoadMore, setCalledLoadMore] = useState(false);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [lastMessageCreationTime, setLastMessageCreationTime] = useState<
+        number | undefined
+    >(undefined);
 
     // Query messages from Convex
     const { results, status, loadMore } =
         usePaginatedQuery(
             api.messages.list,
-            convexChannelId ? { channelId: convexChannelId } : "skip",
+            channelId && lastMessageCreationTime !== undefined
+                ? { channelId: channelId, lastMessageCreationTime }
+                : "skip",
             { initialNumItems: 50 }
         ) || [];
+
+    useEffect(() => {
+        async function handleData() {
+            if (!results || !channelId) return;
+            // note: this a somewhat broken implement for load more
+            if (calledLoadMore) {
+                try {
+                    await db.messages.bulkAdd(results.reverse() as Message[]);
+                } catch (error) {}
+
+                setCalledLoadMore(false);
+                setMessages(results.reverse() as Message[]);
+                return;
+            }
+            if (lastMessageCreationTime === undefined) {
+                const localMessages = await db.messages
+                    .where("[channelId+_creationTime]")
+                    .between([channelId, 0], [channelId, Infinity])
+                    .toArray();
+
+                setMessages(localMessages);
+                setLastMessageCreationTime(
+                    localMessages.length > 0
+                        ? localMessages[localMessages.length - 1]._creationTime
+                        : 0
+                );
+            } else {
+                setMessages([...messages, ...results.reverse()] as Message[]);
+                await db.messages.bulkAdd(results.reverse() as Message[]);
+            }
+        }
+        handleData();
+        console.log(lastMessageCreationTime);
+    }, [results]);
+
+    function loadMoreMessages(numItems: number) {
+        setCalledLoadMore(true);
+        loadMore(numItems);
+    }
+
+    return { messages, messagesStatus: status, loadMoreMessages };
+}
+
+export function useMessages(channelId: string | null) {
+    // Convert string ID to Convex ID if it exists
+    const convexChannelId = channelId ? (channelId as Id<"channels">) : null;
 
     // Get the send message mutation
     const sendMessageMutation = useMutation(api.messages.send);
@@ -49,9 +103,9 @@ export function useMessages(channelId: string | null) {
     };
 
     return {
-        messages: results.toReversed(),
-        messagesStatus: status,
-        loadMoreMessages: loadMore,
+        // messages: results.toReversed(),
+        // messagesStatus: status,
+        // loadMoreMessages: loadMore,
         sendMessage,
         editMessage,
         deleteMessage,
