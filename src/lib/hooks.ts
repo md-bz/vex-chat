@@ -6,36 +6,43 @@ import { useEffect, useState } from "react";
 import { db } from "./db";
 import { Message } from "./types";
 
+type statusType =
+    | "LoadingFirstPage"
+    | "CanLoadMore"
+    | "LoadingMore"
+    | "Exhausted"
+    | null;
 export function useGetMessages(channelId: Id<"channels"> | null) {
-    const [calledLoadMore, setCalledLoadMore] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
+    const [cursor, setCursor] = useState<string | null>(null);
+    const [cursorDebounced, setCursorDebounced] = useState<string | null>(null);
+
+    const [isDone, setIsDone] = useState(false);
+    const [status, setStatus] = useState<statusType>(null);
+
     const [lastMessageCreationTime, setLastMessageCreationTime] = useState<
         number | undefined
     >(undefined);
 
     // Query messages from Convex
-    const { results, status, loadMore } =
-        usePaginatedQuery(
-            api.messages.list,
-            channelId && lastMessageCreationTime !== undefined
-                ? { channelId: channelId, lastMessageCreationTime }
-                : "skip",
-            { initialNumItems: 50 }
-        ) || [];
+    const results = useQuery(
+        api.messages.list,
+        channelId && lastMessageCreationTime !== undefined
+            ? {
+                  channelId: channelId,
+                  lastMessageCreationTime,
+                  paginationOpts: { cursor: cursorDebounced, numItems: 50 },
+              }
+            : "skip"
+    );
 
     useEffect(() => {
         async function handleData() {
-            if (!results || !channelId) return;
-            // note: this a somewhat broken implement for load more
-            if (calledLoadMore) {
-                try {
-                    await db.messages.bulkAdd(results.reverse() as Message[]);
-                } catch (error) {}
+            if (!channelId) return;
+            console.log(
+                ` lastMessageCreationTime : ${lastMessageCreationTime}, result : ${results?.page.length}`
+            );
 
-                setCalledLoadMore(false);
-                setMessages(results.reverse() as Message[]);
-                return;
-            }
             if (lastMessageCreationTime === undefined) {
                 const localMessages = await db.messages
                     .where("[channelId+_creationTime]")
@@ -48,18 +55,37 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
                         ? localMessages[localMessages.length - 1]._creationTime
                         : 0
                 );
-            } else {
-                setMessages([...messages, ...results.reverse()] as Message[]);
-                await db.messages.bulkAdd(results.reverse() as Message[]);
             }
+
+            if (!results) return;
+
+            //this means the loadMoreMessages function was called
+            if (cursorDebounced === cursor && cursor !== null) {
+                setMessages([
+                    ...results.page.reverse(),
+                    ...messages,
+                ] as Message[]);
+            } else {
+                setMessages([
+                    ...messages,
+                    ...results.page.reverse(),
+                ] as Message[]);
+            }
+
+            setIsDone(results.isDone);
+            setCursor(results.continueCursor);
+            setStatus(isDone ? "Exhausted" : "CanLoadMore");
+
+            await db.messages.bulkAdd(results.page.reverse() as Message[]);
         }
         handleData();
-        console.log(lastMessageCreationTime);
     }, [results]);
 
     function loadMoreMessages(numItems: number) {
-        setCalledLoadMore(true);
-        loadMore(numItems);
+        console.log("loadMoreMessages");
+
+        setStatus("LoadingMore");
+        setCursorDebounced(cursor);
     }
 
     return { messages, messagesStatus: status, loadMoreMessages };
