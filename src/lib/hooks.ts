@@ -57,26 +57,28 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
                 );
             }
 
-            if (!results) return;
+            if (!results || results.page.length === 0) return;
 
+            const reversedResults = results.page.toReversed();
             //this means the loadMoreMessages function was called
             if (cursorDebounced === cursor && cursor !== null) {
-                setMessages([
-                    ...results.page.reverse(),
-                    ...messages,
-                ] as Message[]);
+                setMessages([...reversedResults, ...messages] as Message[]);
             } else {
-                setMessages([
-                    ...messages,
-                    ...results.page.reverse(),
-                ] as Message[]);
+                setMessages([...messages, ...reversedResults] as Message[]);
             }
 
             setIsDone(results.isDone);
             setCursor(results.continueCursor);
             setStatus(isDone ? "Exhausted" : "CanLoadMore");
+            await db.messages.bulkAdd(reversedResults as Message[]);
 
-            await db.messages.bulkAdd(results.page.reverse() as Message[]);
+            const newLastMessageCreationTime =
+                reversedResults[reversedResults.length - 1]._creationTime + 1;
+            if (
+                lastMessageCreationTime &&
+                newLastMessageCreationTime > lastMessageCreationTime
+            )
+                setLastMessageCreationTime(newLastMessageCreationTime);
         }
         handleData();
     }, [results]);
