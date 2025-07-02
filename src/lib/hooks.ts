@@ -1,4 +1,4 @@
-import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { redirect } from "next/navigation";
@@ -16,8 +16,9 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [cursor, setCursor] = useState<string | null>(null);
     const [cursorDebounced, setCursorDebounced] = useState<string | null>(null);
+    const [numOfMoreMessagesToLoad, setNumOfMoreMessagesToLoad] =
+        useState<number>(50);
 
-    const [isDone, setIsDone] = useState(false);
     const [status, setStatus] = useState<statusType>(null);
 
     const [lastMessageCreationTime, setLastMessageCreationTime] = useState<
@@ -37,66 +38,67 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
     );
 
     useEffect(() => {
-        async function handleData() {
-            if (!channelId) return;
-            console.log(
-                ` lastMessageCreationTime : ${lastMessageCreationTime}, result : ${results?.page.length}`
+        async function getFromLocal() {
+            if (lastMessageCreationTime !== undefined) return;
+            const localMessages = await db.messages
+                .where("[channelId+_creationTime]")
+                .between([channelId, 0], [channelId, Infinity])
+                .toArray();
+
+            setMessages(localMessages);
+            setLastMessageCreationTime(
+                localMessages.length > 0
+                    ? localMessages[localMessages.length - 1]._creationTime
+                    : 0
             );
-
-            if (lastMessageCreationTime === undefined) {
-                const localMessages = await db.messages
-                    .where("[channelId+_creationTime]")
-                    .between([channelId, 0], [channelId, Infinity])
-                    .toArray();
-
-                setMessages(localMessages);
-                setLastMessageCreationTime(
-                    localMessages.length > 0
-                        ? localMessages[localMessages.length - 1]._creationTime
-                        : 0
-                );
-            }
-
-            if (!results || results.page.length === 0) return;
-
-            const reversedResults = results.page.toReversed();
-            //this means the loadMoreMessages function was called
-            if (cursorDebounced === cursor && cursor !== null) {
-                setMessages([...reversedResults, ...messages] as Message[]);
-            } else {
-                setMessages([...messages, ...reversedResults] as Message[]);
-            }
-
-            setIsDone(results.isDone);
-            setCursor(results.continueCursor);
-            setStatus(isDone ? "Exhausted" : "CanLoadMore");
-            await db.messages.bulkAdd(reversedResults as Message[]);
-
-            const newLastMessageCreationTime =
-                reversedResults[reversedResults.length - 1]._creationTime + 1;
-            if (
-                lastMessageCreationTime &&
-                newLastMessageCreationTime > lastMessageCreationTime
-            )
-                setLastMessageCreationTime(newLastMessageCreationTime);
         }
-        handleData();
+        getFromLocal();
+    }, [channelId]);
+
+    useEffect(() => {
+        if (!channelId) return;
+
+        if (!results || results.page.length === 0) return;
+
+        const reversedResults = results.page.toReversed();
+        //this means the loadMoreMessages function was called
+        if (cursorDebounced === cursor && cursor !== null) {
+            setMessages([...reversedResults, ...messages] as Message[]);
+        } else {
+            setMessages([...messages, ...reversedResults] as Message[]);
+        }
+
+        setCursor(results.continueCursor);
+        setStatus(results.isDone ? "Exhausted" : "CanLoadMore");
+
+        const newLastMessageCreationTime =
+            reversedResults[reversedResults.length - 1]._creationTime + 1;
+        if (
+            lastMessageCreationTime &&
+            newLastMessageCreationTime > lastMessageCreationTime
+        )
+            setLastMessageCreationTime(newLastMessageCreationTime);
+    }, [results]);
+
+    useEffect(() => {
+        async function saveToLocal() {
+            if (!results || results.page.length === 0) return;
+            await db.messages.bulkAdd(results?.page.reverse() as Message[]);
+        }
+        saveToLocal();
     }, [results]);
 
     function loadMoreMessages(numItems: number) {
-        console.log("loadMoreMessages");
-
         setStatus("LoadingMore");
+        if (numItems != numOfMoreMessagesToLoad)
+            setNumOfMoreMessagesToLoad(numItems);
         setCursorDebounced(cursor);
     }
 
     return { messages, messagesStatus: status, loadMoreMessages };
 }
 
-export function useMessages(channelId: string | null) {
-    // Convert string ID to Convex ID if it exists
-    const convexChannelId = channelId ? (channelId as Id<"channels">) : null;
-
+export function useMessages() {
     // Get the send message mutation
     const sendMessageMutation = useMutation(api.messages.send);
     const editMessageMutation = useMutation(api.messages.edit);
