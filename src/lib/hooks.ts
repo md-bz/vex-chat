@@ -31,7 +31,6 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
         channelId && lastMessageCreationTime !== undefined
             ? {
                   channelId: channelId,
-                  lastMessageCreationTime,
                   paginationOpts: { cursor: cursorDebounced, numItems: 50 },
               }
             : "skip"
@@ -61,12 +60,17 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
         if (!results || results.page.length === 0) return;
 
         const reversedResults = results.page.toReversed();
+        let sourceMessages;
         //this means the loadMoreMessages function was called
         if (cursorDebounced === cursor && cursor !== null) {
-            setMessages([...reversedResults, ...messages] as Message[]);
+            sourceMessages = [...reversedResults, ...messages];
         } else {
-            setMessages([...messages, ...reversedResults] as Message[]);
+            sourceMessages = [...messages, ...reversedResults];
         }
+
+        const map = new Map(sourceMessages.map((msg) => [msg._id, msg]));
+        const newMessages = Array.from(map.values()) as Message[];
+        setMessages(newMessages);
 
         setCursor(results.continueCursor);
         setStatus(results.isDone ? "Exhausted" : "CanLoadMore");
@@ -83,8 +87,9 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
     useEffect(() => {
         async function saveToLocal() {
             if (!results || results.page.length === 0) return;
-            await db.messages.bulkAdd(results?.page.reverse() as Message[]);
+            await db.messages.bulkPut(results?.page.reverse() as Message[]);
         }
+
         saveToLocal();
     }, [results]);
 

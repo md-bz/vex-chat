@@ -8,6 +8,7 @@ export interface Message {
     text: string;
     timestamp: number;
     editedAt?: number;
+    deletedAt?: number;
     user: User | null;
     replyTo?: Id<"messages">;
     repliedMessage:

@@ -50,6 +50,7 @@ export default defineSchema({
         timestamp: v.number(),
         replyTo: v.optional(v.id("messages")),
         editedAt: v.optional(v.number()), //edit timestamp
+        deletedAt: v.optional(v.number()), //delete timestamp
     }).index("by_channel", ["channelId"]),
 
     channelLastSeen: defineTable({

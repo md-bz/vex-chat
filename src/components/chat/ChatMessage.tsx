@@ -227,6 +227,17 @@ export default function ChatMessage({
                                             edited
                                         </span>
                                     )}
+                                    {message.deletedAt ? (
+                                        <span className="text-muted-foreground">
+                                            deleted
+                                        </span>
+                                    ) : message.editedAt ? (
+                                        <span className="text-muted-foreground">
+                                            edited
+                                        </span>
+                                    ) : (
+                                        ""
+                                    )}
                                     {new Date(
                                         message.timestamp
                                     ).toLocaleTimeString([], {

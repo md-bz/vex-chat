@@ -172,7 +172,10 @@ export const deleteMessage = mutation({
             throw new ConvexError("Not a member of this channel");
         }
 
-        await ctx.db.delete(args.messageId);
+        await ctx.db.patch(args.messageId, {
+            text: "this message has been deleted",
+            deletedAt: Date.now(),
+        });
         return args.messageId;
     },
 });
