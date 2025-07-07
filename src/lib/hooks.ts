@@ -21,35 +21,28 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
 
     const [status, setStatus] = useState<statusType>(null);
 
-    const [lastMessageCreationTime, setLastMessageCreationTime] = useState<
-        number | undefined
-    >(undefined);
-
     // Query messages from Convex
     const results = useQuery(
         api.messages.list,
-        channelId && lastMessageCreationTime !== undefined
+        channelId && status !== "Exhausted"
             ? {
                   channelId: channelId,
-                  paginationOpts: { cursor: cursorDebounced, numItems: 50 },
+                  paginationOpts: {
+                      cursor: cursorDebounced,
+                      numItems: numOfMoreMessagesToLoad,
+                  },
               }
             : "skip"
     );
 
     useEffect(() => {
         async function getFromLocal() {
-            if (lastMessageCreationTime !== undefined) return;
             const localMessages = await db.messages
                 .where("[channelId+_creationTime]")
                 .between([channelId, 0], [channelId, Infinity])
                 .toArray();
 
             setMessages(localMessages);
-            setLastMessageCreationTime(
-                localMessages.length > 0
-                    ? localMessages[localMessages.length - 1]._creationTime
-                    : 0
-            );
         }
         getFromLocal();
     }, [channelId]);
@@ -74,14 +67,6 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
 
         setCursor(results.continueCursor);
         setStatus(results.isDone ? "Exhausted" : "CanLoadMore");
-
-        const newLastMessageCreationTime =
-            reversedResults[reversedResults.length - 1]._creationTime + 1;
-        if (
-            lastMessageCreationTime &&
-            newLastMessageCreationTime > lastMessageCreationTime
-        )
-            setLastMessageCreationTime(newLastMessageCreationTime);
     }, [results]);
 
     useEffect(() => {
