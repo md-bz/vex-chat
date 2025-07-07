@@ -30,7 +30,7 @@ export default function MessageMenu({
     children,
 }: MessageMenuProps) {
     const { setSelectedMessage } = useSelectMessageStore();
-    const { deleteMessage } = useMessages(null);
+    const { deleteMessage } = useMessages();
     const [open, setOpen] = useState(false);
 
     const handleEdit = () => {

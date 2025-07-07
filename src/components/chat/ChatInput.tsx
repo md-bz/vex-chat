@@ -13,9 +13,7 @@ export function ChatInput() {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const { currentChannel } = useChatStore();
     const { createChannel } = useChannels();
-    const { sendMessage, editMessage } = useMessages(
-        currentChannel?._id || null
-    );
+    const { sendMessage, editMessage } = useMessages();
     const { selectedMessage, selectType, clearSelectedMessage } =
         useSelectMessageStore();
 

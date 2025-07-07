@@ -4,7 +4,7 @@ import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 import { useChatStore } from "@/lib/store";
 import { formatTime } from "@/lib/utils";
-import { useChannels, useGetMessages, useMessages } from "@/lib/hooks";
+import { useChannels, useGetMessages } from "@/lib/hooks";
 import { useDebouncedCallback } from "use-debounce";
 import { Id } from "../../../convex/_generated/dataModel";
 import { Channel, User } from "@/lib/types";
