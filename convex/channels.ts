@@ -323,6 +323,28 @@ export const createLink = mutation({
         return link;
     },
 });
+export const revokeLink = mutation({
+    args: {
+        link: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const channel = await ctx.db
+            .query("channelLinks")
+            .withIndex("by_link", (q) => q.eq("link", args.link))
+            .first();
+
+        if (!channel) {
+            throw new ConvexError("Link not found");
+        }
+
+        const isAdmin = await isUserAdminOfChannel(ctx, channel.channelId);
+        if (!isAdmin) {
+            throw new ConvexError("You are not an admin of this channel");
+        }
+
+        await ctx.db.delete(channel._id);
+    },
+});
 
 export const joinChannel = mutation({
     args: {

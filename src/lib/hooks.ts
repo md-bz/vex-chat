@@ -137,6 +137,7 @@ export function useChannels() {
     const createChannelMutation = useMutation(api.channels.create);
     const seenChannelMutation = useMutation(api.channels.seenChannel);
     const createChannelLinkMutation = useMutation(api.channels.createLink);
+    const channelRevokeLinkMutation = useMutation(api.channels.revokeLink);
     const joinChannelMutation = useMutation(api.channels.joinChannel);
 
     const getChannelLastSeen = (channelId?: Id<"channels">) =>
@@ -178,6 +179,12 @@ export function useChannels() {
         });
     };
 
+    const  revokeChannelLink = async (link: string) => {
+        return await channelRevokeLinkMutation({
+            link,
+        });
+    };
+
     const joinChannel = async (link: string) => {
         return await joinChannelMutation({
             link,
@@ -193,6 +200,7 @@ export function useChannels() {
         joinChannel,
         createChannelLink,
         getSharedPrivate,
+        revokeChannelLink,
     };
 }
 

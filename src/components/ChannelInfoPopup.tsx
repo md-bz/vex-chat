@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LinkIcon } from "lucide-react";
+import { LinkIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -22,6 +22,16 @@ import { useChannels } from "@/lib/hooks";
 import { useAuth } from "@clerk/nextjs";
 import { Id } from "../../convex/_generated/dataModel";
 import Copyable from "./Copyable";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 interface ChannelInfoPopupProps {
     id: Id<"channels"> | null;
@@ -51,7 +61,11 @@ export default function ChannelInfoPopup({
     const [currentInviteLink, setCurrentInviteLink] = useState(
         `https://${domain}/join/${inviteLink}`
     );
-    const { createChannelLink } = useChannels();
+
+    const [isConfirmRevokeLinkOpen, setIsConfirmRevokeLinkOpen] =
+        useState(false);
+
+    const { createChannelLink, revokeChannelLink } = useChannels();
     const { userId } = useAuth();
 
     const generateInviteLink = async () => {
@@ -64,6 +78,15 @@ export default function ChannelInfoPopup({
             console.error("Failed to create invite link:", error);
         } finally {
             setGeneratingLink(false);
+        }
+    };
+
+    const handleRevokeLink = async () => {
+        try {
+            if (!inviteLink) return;
+            await revokeChannelLink(inviteLink);
+        } catch (error) {
+            console.error("Failed to revoke invite link:", error);
         }
     };
 
@@ -114,15 +137,27 @@ export default function ChannelInfoPopup({
                         <div className="space-y-2">
                             <h3 className="text-sm font-medium">Invite Link</h3>
                             {inviteLink ? (
-                                <div className="flex items-center space-x-2 justify-between not-sm:max-w-[95%]">
+                                <div className="flex items-center space-x-2 justify-between not-sm:max-w-[85%]">
                                     <div className="bg-muted p-2 rounded-md text-xs flex-1 truncate">
                                         {currentInviteLink}
                                     </div>
-                                    <Copyable
-                                        value={currentInviteLink}
-                                        tooltipCopy="Copy invite link"
-                                        tooltipCopied="Copied!"
-                                    />
+                                    <div className="flex items-center space-x-2">
+                                        <Copyable
+                                            value={currentInviteLink}
+                                            tooltipCopy="Copy invite link"
+                                            tooltipCopied="Copied!"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() =>
+                                                setIsConfirmRevokeLinkOpen(true)
+                                            }
+                                        >
+                                            <Trash2Icon className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
                             ) : (
                                 <Button
@@ -164,6 +199,29 @@ export default function ChannelInfoPopup({
                         </ScrollArea>
                     </div>
                 </div>
+                {/* Revoke link Confirmation Dialog */}
+                <AlertDialog
+                    open={isConfirmRevokeLinkOpen}
+                    onOpenChange={setIsConfirmRevokeLinkOpen}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will revoke the link.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleRevokeLink}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                                Revoke
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </DialogContent>
         </Dialog>
     );
