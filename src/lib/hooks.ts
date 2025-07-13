@@ -19,14 +19,34 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
     const [numOfMoreMessagesToLoad, setNumOfMoreMessagesToLoad] =
         useState<number>(50);
 
-    const [status, setStatus] = useState<statusType>(null);
+    const [firstMessageCreationTime, setFirstMessageCreationTime] = useState<
+        number | null
+    >(null);
 
-    // Query messages from Convex
-    const results = useQuery(
+    // the status is only used for load more messages
+    const [status, setStatus] = useState<statusType>("CanLoadMore");
+
+    // Query: latest messages (no pagination)
+    const latestResults = useQuery(
         api.messages.list,
-        channelId && status !== "Exhausted"
+        channelId
             ? {
                   channelId: channelId,
+                  paginationOpts: {
+                      cursor: null,
+                      numItems: 50,
+                  },
+              }
+            : "skip"
+    );
+
+    // Query: load more (pagination)
+    const loadMoreResults = useQuery(
+        api.messages.list,
+        channelId && firstMessageCreationTime
+            ? {
+                  channelId: channelId,
+                  firstMessageCreationTime,
                   paginationOpts: {
                       cursor: cursorDebounced,
                       numItems: numOfMoreMessagesToLoad,
@@ -42,45 +62,90 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
                 .between([channelId, 0], [channelId, Infinity])
                 .toArray();
 
-            setMessages(localMessages);
+            // this doesn't have a default value since if there are no local
+            // then the value from latestMessages should be set
+            if (localMessages.length > 0)
+                setFirstMessageCreationTime(localMessages[0]._creationTime);
         }
-        getFromLocal();
+        if (channelId) getFromLocal();
     }, [channelId]);
 
+    // Handle latest results (first load)
     useEffect(() => {
-        if (!channelId) return;
+        if (!channelId || !latestResults || latestResults.page.length === 0)
+            return;
 
-        if (!results || results.page.length === 0) return;
-
-        const reversedResults = results.page.toReversed();
-        let sourceMessages;
-        //this means the loadMoreMessages function was called
-        if (cursorDebounced === cursor && cursor !== null) {
-            sourceMessages = [...reversedResults, ...messages];
-        } else {
-            sourceMessages = [...messages, ...reversedResults];
-        }
+        const reversedResults = latestResults.page.toReversed();
+        const sourceMessages = [...messages, ...reversedResults];
 
         const map = new Map(sourceMessages.map((msg) => [msg._id, msg]));
         const newMessages = Array.from(map.values()) as Message[];
         setMessages(newMessages);
+        const latestResultsFirstMessageCreationTime =
+            latestResults.page[latestResults.page.length - 1]._creationTime;
+        if (
+            !firstMessageCreationTime ||
+            latestResultsFirstMessageCreationTime < firstMessageCreationTime
+        )
+            setFirstMessageCreationTime(latestResultsFirstMessageCreationTime);
+    }, [latestResults]);
 
-        setCursor(results.continueCursor);
-        setStatus(results.isDone ? "Exhausted" : "CanLoadMore");
-    }, [results]);
+    // Handle pagination results (load more)
+    useEffect(() => {
+        if (!channelId) return;
+
+        if (!loadMoreResults || loadMoreResults.page.length === 0) {
+            // if the loadMore returns empty it means there
+            // is no message before the creation time
+            // but the query is not exhausted since it hasn't loaded all of it
+            // therefore status is set to Exhausted
+            setStatus("Exhausted");
+            return;
+        }
+
+        const reversedResults = loadMoreResults.page.toReversed();
+        const sourceMessages = [...reversedResults, ...messages];
+
+        const map = new Map(sourceMessages.map((msg) => [msg._id, msg]));
+        const newMessages = Array.from(map.values()) as Message[];
+
+        setMessages(newMessages);
+        setCursor(loadMoreResults.continueCursor);
+        setStatus(loadMoreResults.isDone ? "Exhausted" : "CanLoadMore");
+        if (
+            !firstMessageCreationTime ||
+            loadMoreResults.page[0]._creationTime > firstMessageCreationTime
+        )
+            setFirstMessageCreationTime(loadMoreResults.page[0]._creationTime);
+    }, [loadMoreResults]);
+
+    // Save messages from both queries to local DB
+    useEffect(() => {
+        async function saveToLocal() {
+            if (!latestResults || latestResults.page.length === 0) return;
+            await db.messages.bulkPut(
+                latestResults.page.toReversed() as Message[]
+            );
+        }
+
+        if (latestResults) saveToLocal();
+    }, [latestResults]);
 
     useEffect(() => {
         async function saveToLocal() {
-            if (!results || results.page.length === 0) return;
-            await db.messages.bulkPut(results?.page.reverse() as Message[]);
+            if (!loadMoreResults || loadMoreResults.page.length === 0) return;
+            await db.messages.bulkPut(
+                loadMoreResults.page.toReversed() as Message[]
+            );
         }
 
-        saveToLocal();
-    }, [results]);
+        if (loadMoreResults) saveToLocal();
+    }, [loadMoreResults]);
 
     function loadMoreMessages(numItems: number) {
+        if (status === "Exhausted") return;
         setStatus("LoadingMore");
-        if (numItems != numOfMoreMessagesToLoad)
+        if (numItems !== numOfMoreMessagesToLoad)
             setNumOfMoreMessagesToLoad(numItems);
         setCursorDebounced(cursor);
     }
@@ -179,7 +244,7 @@ export function useChannels() {
         });
     };
 
-    const  revokeChannelLink = async (link: string) => {
+    const revokeChannelLink = async (link: string) => {
         return await channelRevokeLinkMutation({
             link,
         });
