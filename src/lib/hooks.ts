@@ -62,6 +62,7 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
                 .between([channelId, 0], [channelId, Infinity])
                 .toArray();
 
+            setMessages(localMessages);
             // this doesn't have a default value since if there are no local
             // then the value from latestMessages should be set
             if (localMessages.length > 0)
