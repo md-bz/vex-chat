@@ -33,7 +33,10 @@ export const InfiniteScrollArea = ({
             if (direction === "top" && scrollTop < 50) {
                 // Load more when near the top
                 loadMore();
-            } else if (scrollHeight - (scrollTop + clientHeight) < 50) {
+            } else if (
+                direction === "bottom" &&
+                scrollHeight - (scrollTop + clientHeight) < 50
+            ) {
                 // Load more when near the bottom
                 loadMore();
             }

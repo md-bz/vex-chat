@@ -5,7 +5,6 @@ import { useChannels, useGetMessages } from "@/lib/hooks";
 import { useDebouncedCallback } from "use-debounce";
 import { Id } from "../../../convex/_generated/dataModel";
 import { Channel, User } from "@/lib/types";
-import { Spinner } from "../ui/loading";
 import { Skeleton } from "../ui/skeleton";
 import ChatMessage from "./ChatMessage";
 import { InfiniteScrollArea } from "../InfiniteScroll";
@@ -89,11 +88,6 @@ export function ChatMessages({
             scrollTrigger={scrollTrigger}
             className="flex-1 p-4 overflow-y-scroll h-20"
         >
-            {messagesStatus === "LoadingMore" && (
-                <div className="flex justify-center py-2">
-                    <Spinner size="small" />
-                </div>
-            )}
             {currentChannel?._id && messagesStatus === "LoadingFirstPage" ? (
                 <div className="flex flex-col gap-4">
                     {[...Array(6)].map((_, i) => {

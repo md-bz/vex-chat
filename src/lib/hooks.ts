@@ -100,7 +100,7 @@ export function useGetMessages(channelId: Id<"channels"> | null) {
             // is no message before the creation time
             // but the query is not exhausted since it hasn't loaded all of it
             // therefore status is set to Exhausted
-            setStatus("Exhausted");
+            if (firstMessageCreationTime) setStatus("Exhausted");
             return;
         }
 
