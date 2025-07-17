@@ -1,7 +1,4 @@
-import React, { useRef, useEffect, useCallback } from "react";
-
-import { ScrollArea } from "@radix-ui/react-scroll-area";
-
+import React, { useEffect, useRef } from "react";
 import { useChatStore } from "@/lib/store";
 import { formatTime } from "@/lib/utils";
 import { useChannels, useGetMessages } from "@/lib/hooks";
@@ -11,6 +8,7 @@ import { Channel, User } from "@/lib/types";
 import { Spinner } from "../ui/loading";
 import { Skeleton } from "../ui/skeleton";
 import ChatMessage from "./ChatMessage";
+import { InfiniteScrollArea } from "../InfiniteScroll";
 
 export function ChatMessages({
     me,
@@ -20,18 +18,13 @@ export function ChatMessages({
     channelInfo: Channel;
 }) {
     const { currentChannel } = useChatStore();
-
     const { loadMoreMessages, messagesStatus, messages } = useGetMessages(
         currentChannel?._id || null
     );
     const { seenChannel } = useChannels();
 
-    const scrollAreaRef = useRef<HTMLDivElement>(null);
     const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
     const lastSeenMessageTimeRef = useRef<number>(0);
-    const prevMessagesStatusRef = useRef<
-        "LoadingFirstPage" | "CanLoadMore" | "LoadingMore" | "Exhausted" | null
-    >(null);
 
     const debouncedSeenChannel = useDebouncedCallback(
         (channelId: Id<"channels">, lastSeenAt: number) => {
@@ -42,43 +35,6 @@ export function ChatMessages({
         },
         300
     );
-
-    // Handle scroll to load more messages
-    const handleScroll = useCallback(
-        (event: React.UIEvent<HTMLDivElement>) => {
-            const scrollTop = event.currentTarget.scrollTop;
-            // If we're near the top of the scroll area and can load more messages
-            if (scrollTop < 50 && messagesStatus === "CanLoadMore") {
-                loadMoreMessages(100);
-            }
-        },
-        [loadMoreMessages, messagesStatus]
-    );
-
-    // Scroll to bottom when initial messages are loaded or new message is received
-    useEffect(() => {
-        // Case 1: Initial load completed - scroll to bottom
-        if (
-            prevMessagesStatusRef.current === "LoadingFirstPage" &&
-            messagesStatus !== "LoadingFirstPage" &&
-            scrollAreaRef.current
-        ) {
-            scrollAreaRef.current.scrollTop =
-                scrollAreaRef.current.scrollHeight;
-        }
-
-        // Case 2: New message received (not during LoadingMore) - scroll to bottom
-        if (
-            prevMessagesStatusRef.current !== "LoadingMore" &&
-            messagesStatus !== "LoadingMore" &&
-            scrollAreaRef.current
-        ) {
-            scrollAreaRef.current.scrollTop =
-                scrollAreaRef.current.scrollHeight;
-        }
-
-        prevMessagesStatusRef.current = messagesStatus;
-    }, [messagesStatus, messages]);
 
     useEffect(() => {
         if (
@@ -111,7 +67,7 @@ export function ChatMessages({
                     }
                 });
             },
-            { root: scrollAreaRef.current, threshold: 0.5 }
+            { threshold: 0.5 }
         );
 
         const currentMap = messageRefs.current;
@@ -119,15 +75,19 @@ export function ChatMessages({
 
         return () => {
             currentMap.forEach((node) => observer.unobserve(node));
-            debouncedSeenChannel.cancel(); // Cleanup debounce
+            debouncedSeenChannel.cancel();
         };
     }, [messages, currentChannel?._id]);
 
+    const scrollTrigger = messages.length;
+
     return (
-        <ScrollArea
+        <InfiniteScrollArea
+            direction="top"
+            loadMore={() => loadMoreMessages(100)}
+            loadStatus={messagesStatus}
+            scrollTrigger={scrollTrigger}
             className="flex-1 p-4 overflow-y-scroll h-20"
-            ref={scrollAreaRef}
-            onScroll={handleScroll}
         >
             {messagesStatus === "LoadingMore" && (
                 <div className="flex justify-center py-2">
@@ -183,6 +143,6 @@ export function ChatMessages({
                     );
                 })
             )}
-        </ScrollArea>
+        </InfiniteScrollArea>
     );
 }

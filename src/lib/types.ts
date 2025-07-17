@@ -45,3 +45,10 @@ export interface channelLastSeen {
     channelId: Id<"channels">;
     lastSeenAt: number;
 }
+
+export type LoadStatus =
+    | "LoadingFirstPage"
+    | "CanLoadMore"
+    | "LoadingMore"
+    | "Exhausted"
+    | null;
