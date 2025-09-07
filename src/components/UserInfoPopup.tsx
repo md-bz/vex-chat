@@ -199,6 +199,9 @@ function UserInfoPopupBase({
                         <div className="flex flex-col space-y-2 pt-0">
                             {user.username && (
                                 <div className="pb-3">
+                                    <p className="text-sm text-muted-foreground ">
+                                        Username
+                                    </p>
                                     <div className="flex items-center justify-between">
                                         <p className="text-xl ">{user.name}</p>
                                         <Copyable
@@ -211,9 +214,14 @@ function UserInfoPopupBase({
                                             }}
                                         />
                                     </div>
+                                </div>
+                            )}
+                            {user.bio && (
+                                <div className="pb-3">
                                     <p className="text-sm text-muted-foreground ">
-                                        username
+                                        Bio
                                     </p>
+                                    <p className="text-sm">{user.bio}</p>
                                 </div>
                             )}
                             <div className="flex items-center gap-2 pb-5">

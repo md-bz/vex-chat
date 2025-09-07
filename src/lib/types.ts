@@ -24,6 +24,7 @@ export interface User {
     _id: Id<"users">;
     name: string;
     username?: string;
+    bio?: string;
     lastSeen?: number | string;
     imageUrl?: string;
 }

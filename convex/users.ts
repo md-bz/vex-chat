@@ -190,6 +190,7 @@ export const updateUserPreferences = mutation({
         name: v.optional(v.string()),
         username: v.optional(v.string()),
         showLastSeen: v.optional(v.boolean()),
+        bio: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const user = await getUser(ctx);

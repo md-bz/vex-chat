@@ -282,9 +282,15 @@ export function useUsers() {
     const updateUserPreferences = (
         name?: string,
         username?: string,
-        showLastSeen?: boolean
+        showLastSeen?: boolean,
+        bio?: string
     ) => {
-        return updateUserPreferencesMutation({ name, username, showLastSeen });
+        return updateUserPreferencesMutation({
+            name,
+            username,
+            showLastSeen,
+            bio,
+        });
     };
 
     const getUserByUsername = (username?: string) => {

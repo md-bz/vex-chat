@@ -22,6 +22,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     const user = getMe();
 
     const [name, setName] = useState(user?.name || "");
+    const [bio, setBio] = useState(user?.bio || "");
     const [username, setUsername] = useState(user?.username || "");
     const [showLastSeen, setShowLastSeen] = useState(
         user?.showLastSeen ?? true
@@ -34,7 +35,7 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
     const handleSave = async () => {
         setIsLoading(true);
         try {
-            await updateUserPreferences(name, username, showLastSeen);
+            await updateUserPreferences(name, username, showLastSeen, bio);
             setOpen(false);
         } catch (error: any) {
             const errorMessage =
@@ -72,6 +73,17 @@ export function SettingsDialog({ children }: { children: React.ReactNode }) {
                         value={username}
                         onChange={(e) => {
                             setUsername(e.target.value);
+                            setError("");
+                        }}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="bio">Bio</Label>
+                    <Input
+                        id="bio"
+                        value={bio}
+                        onChange={(e) => {
+                            setBio(e.target.value);
                             setError("");
                         }}
                     />

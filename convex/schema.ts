@@ -7,6 +7,7 @@ export default defineSchema({
         name: v.string(),
         imageUrl: v.optional(v.string()),
         username: v.optional(v.string()),
+        bio: v.optional(v.string()),
         lastSeen: v.number(),
         showLastSeen: v.boolean(),
     })
