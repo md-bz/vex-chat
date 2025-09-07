@@ -196,7 +196,7 @@ export const updateUserPreferences = mutation({
         const user = await getUser(ctx);
 
         // If username is being updated, check if it's already taken
-        if (args.username) {
+        if (args.username && args.username !== user.username) {
             const username = normalizeUsername(args.username);
             await checkUsernameExistence(username, ctx);
             args.username = username;
